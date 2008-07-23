@@ -1,5 +1,5 @@
 // 
-// CDataState.cs
+// XmlCDataState.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -32,47 +32,35 @@ using System.Text;
 
 namespace MonoDevelop.Xml.StateEngine
 {
-	public class CDataState : State
+	public class XmlCDataState : State
 	{
-		char backOne;
-		char backTwo;
-
-		public CDataState (State parent, int position)
-			: base (parent, position)
-		{
-		}
+		const int NOMATCH = 0;
+		const int SINGLE_BRACKET = 1;
+		const int DOUBLE_BRACKET = 2;
 		
-		public override State PushChar (char c, int position, out bool reject)
+		public override State PushChar (char c, IParseContext context, ref bool reject)
 		{
-			reject = false;
-			if (c == '>' && backOne == ']' && backTwo == ']') {
-				Close (position);
+			if (c == ']') {
+				//make sure we know when there are two ']' chars together
+				if (context.StateTag == NOMATCH)
+					context.StateTag = SINGLE_BRACKET;
+				else
+					context.StateTag = DOUBLE_BRACKET;
+				
+			} else if (c == '>' && context.StateTag == DOUBLE_BRACKET) {
+				// if the ']]' is followed by a '>', the state has ended
+				// so attach a node to the DOM and end the state
+				if (context.BuildTree) {
+					int start = context.Position - (context.CurrentStateLength + 9); // <![CDATA[ is 9 chars
+					((XContainer) context.Nodes.Peek ()).AddChildNode (new XCData (start, context.Position));
+				}
 				return Parent;
+			} else {
+				// not any part of a ']]>', so make sure matching is reset
+				context.StateTag = NOMATCH;
 			}
-			backTwo = backOne;
-			backOne = c;
+			
 			return null;
 		}
-
-		public override string ToString ()
-		{
-			return "[CData]";
-		}
-		
-		#region Cloning API
-		
-		public override State ShallowCopy ()
-		{
-			return new CDataState (this);
-		}
-		
-		protected CDataState (CDataState copyFrom) : base (copyFrom)
-		{
-			backOne = copyFrom.backOne;
-			backTwo = copyFrom.backTwo;
-		}
-		
-		#endregion
-
 	}
 }

@@ -1,5 +1,5 @@
 // 
-// XmlMalformedTagState.cs
+// XmlDocTypeState.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -27,20 +27,30 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace MonoDevelop.Xml.StateEngine
 {
-	
-	public class XmlMalformedTagState : State
+	public class XmlDocTypeState : State
 	{
-		
 		public override State PushChar (char c, IParseContext context, ref bool reject)
 		{
-			if (c == '<' || c == '>') {
-				reject = (c == '<');
-				return RootState;
+			if (c == '>' || c == '<') {
+				if (c == '<') {
+					reject = true;
+					context.LogError ("Doctype ended prematurely.");
+				}
+				
+				if (context.BuildTree) {
+					int start = context.Position - (context.CurrentStateLength + 9); // <!DOCTYPE is 9 chars
+					((XContainer) context.Nodes.Peek ()).AddChildNode (new XDocType (start, context.Position)); 
+				}
+				return Parent;
 			}
+			
 			return null;
 		}
 	}
 }
+
