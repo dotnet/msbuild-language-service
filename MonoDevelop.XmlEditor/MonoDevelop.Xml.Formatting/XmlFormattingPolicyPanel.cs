@@ -56,7 +56,7 @@ namespace MonoDevelop.Xml.Formatting
 			return policy;
 		}
 		
-		void CleanScopes (XmlFormatingSettings format)
+		void CleanScopes (XmlFormattingSettings format)
 		{
 			for (int n=format.ScopeXPath.Count - 1; n >= 0; n--) {
 				if (format.ScopeXPath [n].Length == 0)
