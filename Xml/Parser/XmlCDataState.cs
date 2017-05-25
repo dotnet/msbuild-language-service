@@ -39,7 +39,7 @@ namespace MonoDevelop.Xml.Parser
 		public override XmlParserState PushChar (char c, IXmlParserContext context, ref string rollback)
 		{
 			if (context.CurrentStateLength == 1) {
-				context.Nodes.Push (new XCData (context.LocationMinus ("<![CDATA[".Length + 1)));
+				context.Nodes.Push (new XCData (context.Offset - "<![CDATA[".Length - 1));
 			}
 			
 			if (c == ']') {
@@ -55,7 +55,7 @@ namespace MonoDevelop.Xml.Parser
 				var cdata = (XCData) context.Nodes.Pop ();
 				
 				if (context.BuildTree) {
-					cdata.End (context.Location);
+					cdata.End (context.Offset);
 					((XContainer) context.Nodes.Peek ()).AddChildNode (cdata); 
 				}
 				return Parent;

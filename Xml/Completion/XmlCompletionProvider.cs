@@ -1,5 +1,5 @@
 // 
-// XmlProcessingInstructionState.cs
+// IXmlCompletionData.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -26,41 +26,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using MonoDevelop.Xml.Dom;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Completion;
 
-namespace MonoDevelop.Xml.Parser
+namespace MonoDevelop.Xml.Completion
 {
-	public class XmlProcessingInstructionState : XmlParserState
+	public abstract class XmlCompletionProvider
 	{
-		const int NOMATCH = 0;
-		const int QUESTION = 1;
-		
-		public override XmlParserState PushChar (char c, IXmlParserContext context, ref string rollback)
+		public virtual Task GetElementCompletionData (CompletionContext context, XmlElementPath path, CancellationToken token)
 		{
-			if (context.CurrentStateLength == 1) {
-				context.Nodes.Push (new XProcessingInstruction (context.Offset - "<?".Length));
-			}
-			
-			if (c == '?') {
-				if (context.StateTag == NOMATCH) {
-					context.StateTag = QUESTION;
-					return null;
-				}
-			} else if (c == '>' && context.StateTag == QUESTION) {
-				// if the '?' is followed by a '>', the state has ended
-				// so attach a node to the DOM and end the state
-				var xpi = (XProcessingInstruction) context.Nodes.Pop ();
-				
-				if (context.BuildTree) {
-					xpi.End (context.Offset);
-					((XContainer) context.Nodes.Peek ()).AddChildNode (xpi); 
-				}
-				return Parent;
-			} else {
-				context.StateTag = NOMATCH;
-			}
-			
-			return null;
+			return Task.CompletedTask;
+		}
+
+		public virtual Task GetAttributeCompletionData (CompletionContext context, XmlElementPath path, CancellationToken token)
+		{
+			return Task.CompletedTask;
+		}
+
+		public virtual Task GetAttributeValueCompletionData (CompletionContext context, XmlElementPath path, string name, CancellationToken token)
+		{
+			return Task.CompletedTask;
 		}
 	}
 }

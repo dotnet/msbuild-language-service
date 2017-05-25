@@ -1,4 +1,4 @@
-//
+﻿//
 // XCData.cs
 //
 // Author:
@@ -24,14 +24,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XCData : XNode
 	{
-		public XCData (DocumentLocation start) : base (start) {}
-		public XCData (DocumentRegion region) : base (region) {}
+		public XCData (int startOffset) : base (startOffset) {}
+		public XCData (TextSpan span) : base (span) {}
 
 		protected XCData () {}
 		protected override XObject NewInstance () { return new XCData (); }

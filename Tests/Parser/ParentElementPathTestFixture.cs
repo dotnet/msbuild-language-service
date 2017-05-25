@@ -4,12 +4,12 @@ using NUnit.Framework;
 namespace MonoDevelop.Xml.Tests.Parser
 {
 	[TestFixture]
-	public class ParentElementPathTestFixture 
+	public class ParentElementPathTestFixture
 	{
 		const string namespaceURI = "http://foo/foo.xsd";
 
 		[Test]
-		public void SuccessTest1()
+		public void SuccessTest1 ()
 		{
 			AssertParentPath (
 				"<foo xmlns='" + namespaceURI + "' >$<",
@@ -18,16 +18,16 @@ namespace MonoDevelop.Xml.Tests.Parser
 		}
 
 		[Test]
-		public void SuccessTest2()
+		public void SuccessTest2 ()
 		{
 			AssertParentPath (
 				"<foo xmlns='" + namespaceURI + "' ><bar></bar><$",
 				new QualifiedName ("foo", namespaceURI)
 			);
-		}		
+		}
 
 		[Test]
-		public void SuccessTest3()
+		public void SuccessTest3 ()
 		{
 			AssertParentPath (
 				"<foo xmlns='" + namespaceURI + "' ><bar/><$",
@@ -36,7 +36,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 		}
 
 		[Test]
-		public void SuccessTest4()
+		public void SuccessTest4 ()
 		{
 			AssertParentPath (
 				"<bar xmlns='http://test.com'/><foo xmlns='" + namespaceURI + "' ><$",
@@ -44,14 +44,14 @@ namespace MonoDevelop.Xml.Tests.Parser
 			);
 		}
 
-		public void AssertParentPath (string doc, params QualifiedName[] qualifiedNames)
+		public void AssertParentPath (string doc, params QualifiedName [] qualifiedNames)
 		{
 			TestXmlParser.AssertState (doc, p =>
 				Assert.AreEqual (
 					new XmlElementPath (qualifiedNames),
 					XmlElementPath.Resolve (p.Nodes.ToArray ())
 				)
-			);;
+			);
 		}
 	}
 }

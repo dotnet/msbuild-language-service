@@ -1,5 +1,5 @@
-// 
-// XmlProcessingInstructionState.cs
+﻿// 
+// Parser.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -26,41 +26,25 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using MonoDevelop.Xml.Dom;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {
-	public class XmlProcessingInstructionState : XmlParserState
+	public class XmlDiagnosticInfo
 	{
-		const int NOMATCH = 0;
-		const int QUESTION = 1;
-		
-		public override XmlParserState PushChar (char c, IXmlParserContext context, ref string rollback)
+		public XmlDiagnosticInfo (DiagnosticSeverity severity, string message, int offset)
+			: this (severity, message, new TextSpan(offset, 0)) {}
+
+		public XmlDiagnosticInfo (DiagnosticSeverity severity, string message, TextSpan span)
 		{
-			if (context.CurrentStateLength == 1) {
-				context.Nodes.Push (new XProcessingInstruction (context.Offset - "<?".Length));
-			}
-			
-			if (c == '?') {
-				if (context.StateTag == NOMATCH) {
-					context.StateTag = QUESTION;
-					return null;
-				}
-			} else if (c == '>' && context.StateTag == QUESTION) {
-				// if the '?' is followed by a '>', the state has ended
-				// so attach a node to the DOM and end the state
-				var xpi = (XProcessingInstruction) context.Nodes.Pop ();
-				
-				if (context.BuildTree) {
-					xpi.End (context.Offset);
-					((XContainer) context.Nodes.Peek ()).AddChildNode (xpi); 
-				}
-				return Parent;
-			} else {
-				context.StateTag = NOMATCH;
-			}
-			
-			return null;
+			Severity = severity;
+			Message = message;
+			Span = span;
 		}
+
+		public DiagnosticSeverity Severity { get; }
+		public string Message { get; }
+		public TextSpan Span { get; }
 	}
 }

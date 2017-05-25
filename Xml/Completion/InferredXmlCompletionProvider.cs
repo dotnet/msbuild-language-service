@@ -28,12 +28,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.CodeAnalysis.Completion;
 using MonoDevelop.Xml.Dom;
 
 namespace MonoDevelop.Xml.Completion
 {
-	public class InferredXmlCompletionProvider : IXmlCompletionProvider
+	class InferredXmlCompletionProvider : XmlCompletionProvider
 	{
 		Dictionary<string,HashSet<string>> elementCompletions = new Dictionary<string,HashSet<string>> ();
 		Dictionary<string,HashSet<string>> attributeCompletions = new Dictionary<string,HashSet<string>> ();
@@ -69,61 +69,45 @@ namespace MonoDevelop.Xml.Completion
 			}
 		}
 		
-		public Task<CompletionDataList> GetElementCompletionData (CancellationToken token)
+		public override Task GetElementCompletionData (CompletionContext context, XmlElementPath path, CancellationToken token)
 		{
-			return GetChildElementCompletionData ("", token);
+			return GetCompletions (context, elementCompletions, path, XmlCompletionData.DataType.XmlElement);
 		}
 		
-		public Task<CompletionDataList> GetElementCompletionData (string namespacePrefix, CancellationToken token)
+		public override Task GetAttributeCompletionData (CompletionContext context, XmlElementPath path, CancellationToken token)
 		{
-			return Task.FromResult (new CompletionDataList { AutoSelect = false });
+			return GetCompletions (context, attributeCompletions, path, XmlCompletionData.DataType.XmlAttribute);
 		}
 		
-		public Task<CompletionDataList> GetChildElementCompletionData (XmlElementPath path, CancellationToken token)
+		public override Task GetAttributeValueCompletionData (CompletionContext context, XmlElementPath path, string name, CancellationToken token)
 		{
-			return GetCompletions (elementCompletions, path, XmlCompletionData.DataType.XmlElement);
+			return Task.CompletedTask;
 		}
 		
-		public Task<CompletionDataList> GetAttributeCompletionData (XmlElementPath path, CancellationToken token)
+		static Task GetCompletions (CompletionContext context, Dictionary<string,HashSet<string>> map, XmlElementPath path, XmlCompletionData.DataType type)
 		{
-			return GetCompletions (attributeCompletions, path, XmlCompletionData.DataType.XmlAttribute);
-		}
-		
-		public Task<CompletionDataList> GetAttributeValueCompletionData (XmlElementPath path, string name, CancellationToken token)
-		{
-			return Task.FromResult (new CompletionDataList { AutoSelect = false });
-		}
-		
-		public Task<CompletionDataList> GetChildElementCompletionData (string tagName, CancellationToken token)
-		{
-			return GetCompletions (elementCompletions, tagName, XmlCompletionData.DataType.XmlElement);
-		}
-		
-		public Task<CompletionDataList> GetAttributeCompletionData (string tagName, CancellationToken token)
-		{
-			return GetCompletions (attributeCompletions, tagName, XmlCompletionData.DataType.XmlAttribute);
-		}
-		
-		public Task<CompletionDataList> GetAttributeValueCompletionData (string tagName, string name, CancellationToken token)
-		{
-			return Task.FromResult (new CompletionDataList { AutoSelect = false });
-		}
-		
-		static Task<CompletionDataList> GetCompletions (Dictionary<string,HashSet<string>> map, string tagName, XmlCompletionData.DataType type)
-		{
-			var data = new CompletionDataList { AutoSelect = false };
+			if (path == null || path.Elements.Count == 0) {
+				return Task.CompletedTask;
+			}
+
+			var tagName = path.Elements [path.Elements.Count - 1].Name;
+
 			HashSet<string> values;
-			if (map.TryGetValue (tagName, out values))
-				foreach (string s in values)
-					data.Add (new XmlCompletionData (s, type));
-			return Task.FromResult (data);
+			if (map.TryGetValue (tagName, out values)) {
+				foreach (string s in values) {
+					context.AddItem (XmlCompletionDataHelper.Create (s, type));
+				}
+			}
+			return Task.CompletedTask;
 		}
-		
-		static Task<CompletionDataList> GetCompletions (Dictionary<string,HashSet<string>> map, XmlElementPath path, XmlCompletionData.DataType type)
+	}
+
+	public static class XmlCompletionDataHelper
+	{
+		public static CompletionItem Create (string name, XmlCompletionData.DataType type)
 		{
-			if (path == null || path.Elements.Count == 0)
-				return Task.FromResult (new CompletionDataList { AutoSelect = false });
-			return GetCompletions (map, path.Elements[path.Elements.Count - 1].Name, type);
+			//TODO: icon
+			return CompletionItem.Create (name);
 		}
 	}
 }

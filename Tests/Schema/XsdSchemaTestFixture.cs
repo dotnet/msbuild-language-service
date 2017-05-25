@@ -14,7 +14,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class XsdSchemaTestFixture
 	{
-		XmlSchemaCompletionData schemaCompletionData;
+		XmlSchemaCompletionProvider schemaCompletionData;
 		XmlElementPath choicePath;
 		XmlElementPath elementPath;
 		XmlElementPath simpleEnumPath;
@@ -42,7 +42,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 				return;
 			
 			XmlTextReader reader = ResourceManager.GetXsdSchema();
-			schemaCompletionData = new XmlSchemaCompletionData(reader);
+			schemaCompletionData = new XmlSchemaCompletionProvider(reader);
 			
 			// Set up choice element's path.
 			choicePath = new XmlElementPath();

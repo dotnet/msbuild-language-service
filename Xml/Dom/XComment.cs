@@ -23,14 +23,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using MonoDevelop.Ide.Editor;
+
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XComment : XNode
 	{
-		public XComment (DocumentLocation start) : base (start) {}
-		public XComment (DocumentRegion region) : base (region) {}
+		public XComment (int startOffset) : base (startOffset) {}
+		public XComment (TextSpan span) : base (span) {}
 
 		protected XComment () {}
 		protected override XObject NewInstance () { return new XComment (); }

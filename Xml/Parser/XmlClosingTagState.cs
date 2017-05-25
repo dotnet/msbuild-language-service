@@ -1,4 +1,4 @@
-// 
+﻿// 
 // XmlClosingTagState.cs
 // 
 // Author:
@@ -54,7 +54,7 @@ namespace MonoDevelop.Xml.Parser
 				Debug.Assert (context.CurrentStateLength == 1,
 					"IncompleteNode must not be an XClosingTag when CurrentStateLength is 1");
 				
-				ct = new XClosingTag (context.LocationMinus (3)); //3 = </ and the current char
+				ct = new XClosingTag (context.Offset - 3); //3 = </ and the current char
 				context.Nodes.Push (ct);
 			}
 			
@@ -63,15 +63,14 @@ namespace MonoDevelop.Xml.Parser
 				context.Nodes.Pop ();
 				
 				if (ct.IsNamed) {
-					ct.End (context.Location);
+					ct.End (context.Offset);
 					
 					// walk up tree of parents looking for matching tag
 					int popCount = 0;
 					bool found = false;
 					foreach (XObject node in context.Nodes) {
 						popCount++;
-						XElement element = node as XElement;
-						if (element != null && element.Name == ct.Name) {
+						if (node is XElement element && element.Name == ct.Name) {
 							found = true;
 							break;
 						}
@@ -81,11 +80,8 @@ namespace MonoDevelop.Xml.Parser
 					
 					//clear the stack of intermediate unclosed tags
 					while (popCount > 1) {
-						XElement el = context.Nodes.Pop () as XElement;
-						if (el != null)
-							context.LogError (string.Format (
-								"Unclosed tag '{0}' at line {1}, column {2}.", el.Name.FullName, el.Region.BeginLine, el.Region.BeginColumn),
-								ct.Region);
+						if (context.Nodes.Pop () is XElement el)
+							context.LogError (string.Format ("Unclosed tag '{0}'", el.Name.FullName), ct.Span);
 						popCount--;
 					}
 					
@@ -97,8 +93,8 @@ namespace MonoDevelop.Xml.Parser
 							context.Nodes.Pop ();
 					} else {
 						context.LogError (
-							"Closing tag '" + ct.Name.FullName + "' does not match any currently open tag.",
-							ct.Region
+							string.Format ("Closing tag '{0}' does not match any currently open tag.", ct.Name.FullName),
+							ct.Span
 						);
 					}
 				} else {
@@ -108,7 +104,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 			
 			if (c == '<') {
-				context.LogError ("Unexpected '<' in tag.", context.LocationMinus (1));
+				context.LogError ("Unexpected '<' in tag.", context.Offset - 1);
 				context.Nodes.Pop ();
 				rollback = string.Empty;
 				return Parent;
@@ -124,7 +120,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 			
 			rollback = string.Empty;
-			context.LogError ("Unexpected character '" + c + "' in closing tag.", context.LocationMinus (1));
+			context.LogError ("Unexpected character '" + c + "' in closing tag.", context.Offset - 1);
 			context.Nodes.Pop ();
 			return Parent;
 		}

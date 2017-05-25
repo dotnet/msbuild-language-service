@@ -1,0 +1,33 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoDevelop.Xml.Tests", "Tests\MonoDevelop.Xml.Tests.csproj", "{DFE2B715-A5AC-4C34-87F8-B71E67786341}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoDevelop.Xml", "Xml\MonoDevelop.Xml.csproj", "{DC05762C-0F2E-4238-BCFD-40347471B43A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DFE2B715-A5AC-4C34-87F8-B71E67786341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFE2B715-A5AC-4C34-87F8-B71E67786341}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFE2B715-A5AC-4C34-87F8-B71E67786341}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFE2B715-A5AC-4C34-87F8-B71E67786341}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC05762C-0F2E-4238-BCFD-40347471B43A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC05762C-0F2E-4238-BCFD-40347471B43A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC05762C-0F2E-4238-BCFD-40347471B43A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC05762C-0F2E-4238-BCFD-40347471B43A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.inheritsSet = null
+		$1.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $2
+		$2.scope = text/x-csharp
+		$0.TextStylePolicy = $3
+		$3.scope = text/plain
+	EndGlobalSection
+EndGlobal

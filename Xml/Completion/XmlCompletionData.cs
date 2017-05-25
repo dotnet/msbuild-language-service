@@ -22,18 +22,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-using Gdk;
-using Gtk;
-using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.CodeCompletion;
 using System;
-using MonoDevelop.Core;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Ide;
-using MonoDevelop.Ide.Commands;
 using MonoDevelop.Xml.Editor;
-using MonoDevelop.Ide.Editor.Extension;
-using MonoDevelop.Ide.Editor;
 using System.Linq;
 
 namespace MonoDevelop.Xml.Completion

@@ -9,22 +9,22 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public abstract class SchemaTestFixtureBase
 	{
-		XmlSchemaCompletionData schemaCompletionData;
+		XmlSchemaCompletionProvider schemaCompletionData;
 
 		/// <summary>
-		/// Gets the <see cref="XmlSchemaCompletionData"/> object generated
+		/// Gets the <see cref="XmlSchemaCompletionProvider"/> object generated
 		/// by this class.
 		/// </summary>
 		/// <remarks>This object will be null until the <see cref="FixtureInitBase"/>
 		/// has been run.</remarks>
-		public XmlSchemaCompletionData SchemaCompletionData {
+		public XmlSchemaCompletionProvider SchemaCompletionData {
 			get {
 				return schemaCompletionData;
 			}
 		}
 		
 		/// <summary>
-		/// Creates the <see cref="XmlSchemaCompletionData"/> object from 
+		/// Creates the <see cref="XmlSchemaCompletionProvider"/> object from 
 		/// the derived class's schema.
 		/// </summary>
 		/// <remarks>Calls <see cref="FixtureInit"/> at the end of the method.
@@ -108,13 +108,13 @@ namespace MonoDevelop.Xml.Tests.Schema
 		}
 		
 		/// <summary>
-		/// Creates an <see cref="XmlSchemaCompletionData"/> object that 
+		/// Creates an <see cref="XmlSchemaCompletionProvider"/> object that 
 		/// will be used in the test fixture.
 		/// </summary>
-		protected virtual XmlSchemaCompletionData CreateSchemaCompletionDataObject()
+		protected virtual XmlSchemaCompletionProvider CreateSchemaCompletionDataObject()
 		{
 			StringReader reader = new StringReader(GetSchema());
-			return new XmlSchemaCompletionData(reader);
+			return new XmlSchemaCompletionProvider(reader);
 		}
 	}
 }

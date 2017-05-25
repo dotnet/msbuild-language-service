@@ -1,21 +1,21 @@
-// 
-// XmlSchemaNode.cs
-//  
+﻿//
+// IXmlSchemaService.cs
+//
 // Author:
 //       Mikayla Hutchinson <m.j.hutchinson@gmail.com>
-// 
-// Copyright (c) 2011 Novell, Inc.
-// 
+//
+// Copyright (c) 2017 Microsoft Corp.
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,23 +25,24 @@
 // THE SOFTWARE.
 
 using System;
-using Mono.Addins;
-using MonoDevelop.Core;
 
-namespace MonoDevelop.Xml.Editor
+namespace MonoDevelop.Xml.Completion
 {
-	class XmlSchemaNode : ExtensionNode
+	public interface IXmlSchemaService
 	{
-#pragma warning disable 0649
-		[NodeAttribute ("file", true)]
-		string file;
-#pragma warning restore 0649
-		
-		public FilePath File {
-			get {
-				return Addin.GetFilePath (file);
-			}
-		}
+		/// <summary>
+		/// Gets the XML schema matching the filename.
+		/// </summary>
+		XmlSchemaCompletionProvider GetSchemaFromFileName (string filePath);
+
+		/// <summary>
+		/// Gets the XML schema matching the namespace.
+		/// </summary>
+		XmlSchemaCompletionProvider GetSchemaFromNamespace (string namespaceUri);
+
+		/// <summary>
+		/// Whether the file is an XML file and should be opened by the XML editor.
+		/// </summary>
+		bool IsXmlFileName (string filePath);
 	}
 }
-

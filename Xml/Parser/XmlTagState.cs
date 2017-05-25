@@ -1,4 +1,4 @@
-// 
+﻿// 
 // XmlTagState.cs
 // 
 // Author:
@@ -26,15 +26,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
 using System.Diagnostics;
 using MonoDevelop.Xml.Dom;
-using MonoDevelop.Ide.Editor;
 
 namespace MonoDevelop.Xml.Parser
 {
-	
-	
 	public class XmlTagState : XmlParserState
 	{
 		const int ATTEMPT_RECOVERY = 1;
@@ -65,7 +61,7 @@ namespace MonoDevelop.Xml.Parser
 			
 			if (element == null || element.IsComplete) {
 				var parent = element;
-				element = new XElement (context.LocationMinus (2)); // 2 == < + current char
+				element = new XElement (context.Offset - 2); // 2 == < + current char
 				element.Parent = parent;
 				context.Nodes.Push (element);
 			}
@@ -73,7 +69,7 @@ namespace MonoDevelop.Xml.Parser
 			if (c == '<') {
 				if (element.IsNamed) {
 					context.LogError ("Unexpected '<' in tag '" + element.Name.FullName + "'.");
-					Close (element, context, context.LocationMinus (1));
+					Close (element, context, context.Offset - 1);
 				} else {
 					context.LogError ("Unexpected '<' in unnamed tag.");
 				}
@@ -102,7 +98,7 @@ namespace MonoDevelop.Xml.Parser
 				if (!element.IsNamed) {
 					context.LogError ("Tag closed prematurely.");
 				} else {
-					Close (element, context, context.Location);
+					Close (element, context, context.Offset);
 				}
 				return Parent;
 			}
@@ -139,18 +135,18 @@ namespace MonoDevelop.Xml.Parser
 			if (XmlChar.IsWhitespace (c))
 				return null;
 
-			context.LogError ("Unexpected character '" + c + "' in tag.", context.LocationMinus (1));
+			context.LogError ("Unexpected character '" + c + "' in tag.", context.Offset - 1);
 			context.StateTag = ATTEMPT_RECOVERY;
 			return null;
 		}
 		
-		protected virtual void Close (XElement element, IXmlParserContext context, DocumentLocation location)
+		protected virtual void Close (XElement element, IXmlParserContext context, int endOffset)
 		{
 			//have already checked that element is not null, i.e. top of stack is our element
 			if (element.IsClosed)
 				context.Nodes.Pop ();
 
-			element.End (location);
+			element.End (endOffset);
 			if (context.BuildTree) {
 				var parent = (XContainer)context.Nodes.Peek (element.IsClosed ? 0 : 1);
 				parent.AddChildNode (element);

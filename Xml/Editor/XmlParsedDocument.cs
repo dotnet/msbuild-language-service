@@ -1,4 +1,4 @@
-// 
+﻿// 
 // MoonlightParsedDocument.cs
 // 
 // Author:
@@ -28,10 +28,9 @@
 
 using System;
 using System.Collections.Generic;
-using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Xml.Dom;
-using MonoDevelop.Ide.Editor;
 using System.Linq;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Editor
 {
@@ -71,7 +70,7 @@ namespace MonoDevelop.Xml.Editor
 						if (el.IsClosed && el.ClosingTag.Region.EndLine - el.Region.BeginLine > 2) {
 							yield return new FoldingRegion
 								(string.Format ("<{0}...>", el.Name.FullName),
-								 new DocumentRegion (el.Region.Begin, el.ClosingTag.Region.End));
+								 TextSpan.FromBounds (el.Span.Start, el.ClosingTag.Span.End));
 						}
 					}
 					else if (node is XDocType)

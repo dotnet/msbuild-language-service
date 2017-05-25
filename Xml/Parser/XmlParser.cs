@@ -1,4 +1,4 @@
-// 
+﻿// 
 // Parser.cs
 // 
 // Author:
@@ -30,29 +30,25 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Xml.Dom;
-using MonoDevelop.Ide.Editor;
-using MonoDevelop.Ide.TypeSystem;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {
-	public class XmlParser : IDocumentStateEngine, IXmlParserContext
+	public class XmlParser : IXmlParserContext, ICloneable
 	{
 		XmlRootState rootState;
 		XmlParserState currentState;
 		XmlParserState previousState;
 		bool buildTree;
-		
-		int position;
-		DocumentLocation location;
-		DocumentLocation previousLineEnd;
+
+		int offset;
 		int stateTag;
 		StringBuilder keywordBuilder;
 		int currentStateLength;
 		NodeStack nodes;
-		List<Error> errors;
-		
+
 		public XmlParser (XmlRootState rootState, bool buildTree)
 		{
 			this.rootState = rootState;
@@ -61,65 +57,55 @@ namespace MonoDevelop.Xml.Parser
 			this.buildTree = buildTree;
 			Reset ();
 		}
-		
+
 		XmlParser (XmlParser copyFrom)
 		{
 			buildTree = false;
-			
+
 			rootState = copyFrom.rootState;
 			currentState = copyFrom.currentState;
 			previousState = copyFrom.previousState;
-			
-			position = copyFrom.position;
-			previousLineEnd = copyFrom.location;
-			location = copyFrom.location;
+
+			offset = copyFrom.offset;
 			stateTag = copyFrom.stateTag;
 			keywordBuilder = new StringBuilder (copyFrom.keywordBuilder.ToString ());
 			currentStateLength = copyFrom.currentStateLength;
-			
+
 			//clone the node stack
 			var l = new List<XObject> (CopyXObjects (copyFrom.nodes));
 			l.Reverse ();
 			nodes = new NodeStack (l);
 		}
-		
+
 		IEnumerable<XObject> CopyXObjects (IEnumerable<XObject> src)
 		{
 			foreach (XObject o in src)
 				yield return o.ShallowCopy ();
 		}
-		
+
 		public XmlRootState RootState { get { return rootState; } }
-		
+
 		#region IDocumentStateEngine
-		
-		public int Position { get { return position; } }
-		public DocumentLocation Location { get { return location; } }
-		
+
+		public int Offset { get { return offset; } }
+
 		public void Reset ()
 		{
 			currentState = rootState;
 			previousState = rootState;
-			position = 0;
+			offset = 0;
 			stateTag = 0;
-			location = new DocumentLocation (1, 1);
-			previousLineEnd = DocumentLocation.Empty;
 			keywordBuilder = new StringBuilder ();
 			currentStateLength = 0;
 			nodes = new NodeStack ();
 			nodes.Push (rootState.CreateDocument ());
-			
-			if (buildTree)
-				errors = new List<Error> ();
-			else
-				errors = null;
 		}
-		
+
 		public void Parse (System.IO.TextReader reader)
 		{
 			int i = reader.Read ();
 			while (i >= 0) {
-				char c = (char) i;
+				char c = (char)i;
 				Push (c);
 				i = reader.Read ();
 			}
@@ -129,13 +115,7 @@ namespace MonoDevelop.Xml.Parser
 		{
 			try {
 				//FIXME: position/location should be at current char, not after it
-				position++;
-				if (c == '\n') {
-					previousLineEnd = new DocumentLocation (location.Line, location.Column + 1);
-					location = new DocumentLocation (location.Line + 1, 1);
-				} else {
-					location = new DocumentLocation (location.Line, location.Column + 1);
-				}
+				offset++;
 
 				for (int loopLimit = 0; loopLimit < 10; loopLimit++) {
 					currentStateLength++;
@@ -143,11 +123,11 @@ namespace MonoDevelop.Xml.Parser
 					if (currentState == null)
 						return;
 					XmlParserState nextState = currentState.PushChar (c, this, ref rollback);
-					
+
 					// no state change
 					if (nextState == currentState || nextState == null)
 						return;
-					
+
 					// state changed; reset stuff
 					previousState = currentState;
 					currentState = nextState;
@@ -157,8 +137,8 @@ namespace MonoDevelop.Xml.Parser
 						keywordBuilder.Length = 0;
 					else
 						keywordBuilder = new StringBuilder ();
-					
-					
+
+
 					// only loop if the same char should be run through the new state
 					if (rollback == null)
 						return;
@@ -170,60 +150,54 @@ namespace MonoDevelop.Xml.Parser
 					//"complex" rollbacks require actually skipping backwards.
 					//Note the previous state is invalid for this operation.
 
-					//rollback position and location so they're valid
-					position -= (rollback.Length + 1);
-					location = new DocumentLocation (location.Line, location.Column - (rollback.Length + 1));
-					if (location.Column < 0)
-						throw new InvalidOperationException ("Can't roll back across line boundary");
+					//rollback position so it's valid
+					offset -= (rollback.Length + 1);
 
 					foreach (char rollChar in rollback)
 						Push (rollChar);
 
-					//restore position and location
-					position++;
-					location = new DocumentLocation (location.Line, location.Column + 1);
+					//restore position
+					offset++;
 				}
 				throw new InvalidOperationException ("Too many state changes for char '" + c + "'. Current state is " + currentState.ToString () + ".");
-			} catch (Exception ex)  {
+			} catch (Exception ex) {
 				//attach parser state to exceptions
 				throw new Exception (ToString (), ex);
 			}
 		}
-		
+
 		object ICloneable.Clone ()
 		{
 			if (buildTree)
 				throw new InvalidOperationException ("Parser can only be cloned when in stack mode");
 			return new XmlParser (this);
 		}
-		
+
 		#endregion
-		
+
 		public XmlParser GetTreeParser ()
 		{
 			if (buildTree)
 				throw new InvalidOperationException ("Parser can only be cloned when in stack mode");
-			XmlParser p = new XmlParser (this);
-			
-			p.buildTree = true;
-			
+			var parser = new XmlParser (this) { buildTree = true };
+
 			//reconnect the node tree
-			((IXmlParserContext)p).ConnectAll ();
-			
-			p.errors = new List<Error> ();
-			
-			return p;
+			((IXmlParserContext)parser).ConnectAll ();
+
+			parser.Diagnostics.Clear ();
+
+			return parser;
 		}
-		
+
 		public override string ToString ()
 		{
 			StringBuilder builder = new StringBuilder ();
-			builder.AppendFormat ("[Parser Location={0} CurrentStateLength={1}", position, currentStateLength);
+			builder.AppendFormat ("[Parser Location={0} CurrentStateLength={1}", offset, currentStateLength);
 			builder.AppendLine ();
-			
+
 			builder.Append (' ', 2);
 			builder.AppendLine ("Stack=");
-			
+
 			XObject rootOb = null;
 			foreach (XObject ob in nodes) {
 				rootOb = ob;
@@ -231,7 +205,7 @@ namespace MonoDevelop.Xml.Parser
 				builder.Append (ob.ToString ());
 				builder.AppendLine ();
 			}
-			
+
 			builder.Append (' ', 2);
 			builder.AppendLine ("States=");
 			XmlParserState s = currentState;
@@ -241,104 +215,51 @@ namespace MonoDevelop.Xml.Parser
 				builder.AppendLine ();
 				s = s.Parent;
 			}
-			
+
 			if (buildTree && rootOb != null) {
 				builder.Append (' ', 2);
 				builder.AppendLine ("Tree=");
 				rootOb.BuildTreeString (builder, 3);
 			}
-			
-			if (buildTree && errors.Count > 0) {
+
+			if (buildTree && Diagnostics.Count > 0) {
 				builder.Append (' ', 2);
 				builder.AppendLine ("Errors=");
-				foreach (Error err in errors) {
+				foreach (XmlDiagnosticInfo err in Diagnostics) {
 					builder.Append (' ', 4);
-					builder.AppendFormat ("[{0}@{1}:{2}, {3}]\n", err.ErrorType, err.Region.Begin.Line,
-					                      err.Region.Begin.Column, err.Message);
+					builder.AppendLine ($"[{err.Severity}@{err.Span}: {err.Message}]");
 				}
 			}
-			
+
 			builder.AppendLine ("]");
 			return builder.ToString ();
 		}
-		
+
 		#region IParseContext
-				
+
 		int IXmlParserContext.StateTag {
 			get { return stateTag; }
 			set { stateTag = value; }
 		}
-		
-		DocumentLocation IXmlParserContext.LocationMinus (int colOffset)
-		{
-			int col = Location.Column - colOffset;
-			int line = Location.Line;
-			if (col <= 0) {
-				col = previousLineEnd.Column + col;
-				line -= 1;
-				System.Diagnostics.Debug.Assert (col > 0);
-			}
-			System.Diagnostics.Debug.Assert (line > 0);
-			return new DocumentLocation (line, col);
-		}
-		
+
 		StringBuilder IXmlParserContext.KeywordBuilder {
 			get { return keywordBuilder; }
 		}
-		
+
 		XmlParserState IXmlParserContext.PreviousState {
 			get { return previousState; }
 		}
-		
+
 		public int CurrentStateLength { get { return currentStateLength; } }
 		public NodeStack Nodes { get { return nodes; } }
-		
+
 		public bool BuildTree { get { return buildTree; } }
-		
-		void IXmlParserContext.LogError (string message)
+
+		void IXmlParserContext.Log (XmlDiagnosticInfo diagnostic)
 		{
-			if (errors != null || ErrorLogged != null)
-				InternalLogError (new Error (ErrorType.Error, message, Location));
+			Diagnostics.Add (diagnostic);
 		}
-		
-		void IXmlParserContext.LogWarning (string message)
-		{
-			if (errors != null || ErrorLogged != null)
-				InternalLogError (new Error (ErrorType.Warning, message, ((IXmlParserContext)this).LocationMinus (1)));
-		}
-		
-		void IXmlParserContext.LogError (string message, DocumentLocation location)
-		{
-			if (errors != null || ErrorLogged != null)
-				InternalLogError (new Error (ErrorType.Error, message, ((IXmlParserContext)this).LocationMinus (1)));
-		}
-		
-		void IXmlParserContext.LogWarning (string message, DocumentLocation location)
-		{
-			if (errors != null || ErrorLogged != null)
-				InternalLogError (new Error (ErrorType.Warning, message, location));
-		}
-		
-		void IXmlParserContext.LogError (string message, DocumentRegion region)
-		{
-			if (errors != null || ErrorLogged != null)
-				InternalLogError (new Error (ErrorType.Error, message, region));
-		}
-		
-		void IXmlParserContext.LogWarning (string message, DocumentRegion region)
-		{
-			if (errors != null || ErrorLogged != null)
-				InternalLogError (new Error (ErrorType.Warning, message, region));
-		}
-		
-		void InternalLogError (Error err)
-		{
-			if (errors != null)
-				errors.Add (err);
-			if (ErrorLogged != null)
-				ErrorLogged (err);
-		}
-		
+
 		void IXmlParserContext.ConnectAll ()
 		{
 			XNode prev = null;
@@ -351,13 +272,13 @@ namespace MonoDevelop.Xml.Parser
 				prev = o as XNode;
 			}
 		}
-		
+
 		void IXmlParserContext.EndAll (bool pop)
 		{
 			int popCount = 0;
 			foreach (XObject ob in Nodes) {
 				if (!ob.IsEnded && !(ob is XDocument)) {
-					ob.End (Location);
+					ob.End (Offset);
 					popCount++;
 				} else {
 					break;
@@ -367,58 +288,11 @@ namespace MonoDevelop.Xml.Parser
 				for (; popCount > 0; popCount--)
 					Nodes.Pop ();
 		}
-		
+
 		#endregion
-		
+
 		public XmlParserState CurrentState { get { return currentState; } }
-		
-		public IList<Error> Errors { get { return errors; } }
-		
-		public event Action<Error> ErrorLogged;
-	}
-	
-	public interface IXmlParserContext
-	{
-		int StateTag { get; set; }
-		StringBuilder KeywordBuilder { get; }
-		int CurrentStateLength { get; }
-		DocumentLocation Location { get; }
-		DocumentLocation LocationMinus (int colOffset);
-		XmlParserState PreviousState { get; }
-		NodeStack Nodes { get; }
-		bool BuildTree { get; }
-		void LogError (string message);
-		void LogWarning (string message);
-		void LogError (string message, DocumentLocation location);
-		void LogWarning (string message, DocumentLocation location);
-		void LogError (string message, DocumentRegion region);
-		void LogWarning (string message, DocumentRegion region);
-		void EndAll (bool pop);
-		void ConnectAll ();
-	}
-	
-	public class NodeStack : Stack<XObject>
-	{
-		public NodeStack (IEnumerable<XObject> collection) : base (collection) {}
-		public NodeStack () {}
-		
-		public XObject Peek (int down)
-		{
-			int i = 0;
-			foreach (XObject o in this) {
-				if (i == down)
-					return o;
-				i++;
-			}
-			return null;
-		}
-		
-		public XDocument GetRoot ()
-		{
-			XObject last = null;
-			foreach (XObject o in this)
-				last = o;
-			return last as XDocument;
-		}
+
+		public List<XmlDiagnosticInfo> Diagnostics { get; } = new List<XmlDiagnosticInfo> ();
 	}
 }

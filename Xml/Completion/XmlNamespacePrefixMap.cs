@@ -24,22 +24,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
 using System.Collections.Generic;
 
 namespace MonoDevelop.Xml.Completion
 {
 	public class XmlNamespacePrefixMap
 	{
-		Dictionary<string,string> pfNsMap = new Dictionary<string,string> ();
-		Dictionary<string,string> nsPfMap = new Dictionary<string,string> ();
-		
+		readonly Dictionary<string, string> pfNsMap = new Dictionary<string, string> ();
+		readonly Dictionary<string, string> nsPfMap = new Dictionary<string, string> ();
+
 		/// <summary>Gets the prefix registered for the namespace, empty if it's 
 		/// the default namespace, or null if it's not registered.</summary>
 		public string GetPrefix (string ns)
 		{
-			string prefix;
-			if (nsPfMap.TryGetValue (ns, out prefix))
+			if (nsPfMap.TryGetValue (ns, out string prefix))
 				return prefix;
 			return null;
 		}
@@ -47,8 +45,7 @@ namespace MonoDevelop.Xml.Completion
 		/// <summary>Gets the namespace registered for prefix, or default namespace if prefix is empty.</summary>
 		public string GetNamespace (string prefix)
 		{
-			string ns;
-			if (pfNsMap.TryGetValue (prefix, out ns))
+			if (pfNsMap.TryGetValue (prefix, out string ns))
 				return ns;
 			return null;
 		}
@@ -61,4 +58,3 @@ namespace MonoDevelop.Xml.Completion
 		}
 	}
 }
-

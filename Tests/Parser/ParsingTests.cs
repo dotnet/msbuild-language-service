@@ -31,7 +31,7 @@ using NUnit.Framework;
 
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
-using MonoDevelop.Ide.TypeSystem;
+using Microsoft.CodeAnalysis;
 
 
 namespace MonoDevelop.Xml.Tests.Parser
@@ -131,7 +131,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 				}
 			);
 			parser.AssertEmpty ();
-			parser.AssertErrorCount (5, x => x.ErrorType == ErrorType.Error);
+			parser.AssertErrorCount (5, x => x.Severity == DiagnosticSeverity.Error);
 		}
 
 		[Test]
@@ -231,8 +231,8 @@ namespace MonoDevelop.Xml.Tests.Parser
 			Assert.AreEqual ("html", dt.RootElement.FullName);
 			Assert.AreEqual ("-//W3C//DTD XHTML 1.0 Strict//EN", dt.PublicFpi);
 			Assert.AreEqual ("DTD/xhtml1-strict.dtd", dt.Uri);
-			Assert.AreEqual (dt.InternalDeclarationRegion.Begin.Line, 4);
-			Assert.AreEqual (dt.InternalDeclarationRegion.End.Line, 7);
+			Assert.AreEqual (dt.InternalDeclarationRegion.Start, 4);
+			Assert.AreEqual (dt.InternalDeclarationRegion.End, 7);
 			parser.AssertNoErrors ();
 		}
 
@@ -253,8 +253,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 			Assert.AreEqual ("foo", el.Attributes.ElementAt (2).Name.Name);
 			Assert.AreEqual (3, el.Attributes.Count ());
 			parser.AssertErrorCount (1);
-			Assert.AreEqual (1, parser.Errors [0].Region.Begin.Line);
-			Assert.AreEqual (26, parser.Errors [0].Region.Begin.Column);
+			Assert.AreEqual (26, parser.Diagnostics [0].Span.Start, 26);
 		}
 
 		[Test]

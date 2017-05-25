@@ -1,4 +1,4 @@
-//
+﻿//
 // XProcessingInstruction.cs
 //
 // Author:
@@ -23,14 +23,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using MonoDevelop.Ide.Editor;
+
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XProcessingInstruction : XNode
 	{
-		public XProcessingInstruction (DocumentLocation start) : base (start) {}
-		public XProcessingInstruction (DocumentRegion region) : base (region) {}
+		public XProcessingInstruction (int startOffset) : base (startOffset) {}
+		public XProcessingInstruction (TextSpan span) : base (span) {}
 
 		protected XProcessingInstruction () {}
 		protected override XObject NewInstance () { return new XProcessingInstruction (); }

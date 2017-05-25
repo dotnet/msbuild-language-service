@@ -1,4 +1,4 @@
-//
+﻿//
 // XAttribute.cs
 //
 // Author:
@@ -23,20 +23,21 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using MonoDevelop.Ide.Editor;
+
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XAttribute : XObject, INamedXObject
 	{
 
-		public XAttribute (DocumentLocation start, XName name, string value) : base (start)
+		public XAttribute (int startOffset, XName name, string value) : base (startOffset)
 		{
 			this.Name = name;
 			this.Value = value;
 		}
 
-		public XAttribute (DocumentLocation start) : base (start)
+		public XAttribute (int startOffset) : base (startOffset)
 		{
 		}
 
@@ -63,7 +64,7 @@ namespace MonoDevelop.Xml.Dom
 		public override string ToString ()
 		{
 			return string.Format (
-				"[XAttribute Name='{0}' Location='{1}' Value='{2}']", Name.FullName, Region, Value);
+				"[XAttribute Name='{0}' Location='{1}' Value='{2}']", Name.FullName, Span, Value);
 		}
 
 		public override string FriendlyPathRepresentation {

@@ -1,5 +1,5 @@
-// 
-// XmlProcessingInstructionState.cs
+﻿// 
+// Parser.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -26,41 +26,41 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using MonoDevelop.Xml.Dom;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {
-	public class XmlProcessingInstructionState : XmlParserState
+	public static class XmlParserContextExtensions
 	{
-		const int NOMATCH = 0;
-		const int QUESTION = 1;
-		
-		public override XmlParserState PushChar (char c, IXmlParserContext context, ref string rollback)
+		public static void LogError (this IXmlParserContext ctx, string message)
 		{
-			if (context.CurrentStateLength == 1) {
-				context.Nodes.Push (new XProcessingInstruction (context.Offset - "<?".Length));
-			}
-			
-			if (c == '?') {
-				if (context.StateTag == NOMATCH) {
-					context.StateTag = QUESTION;
-					return null;
-				}
-			} else if (c == '>' && context.StateTag == QUESTION) {
-				// if the '?' is followed by a '>', the state has ended
-				// so attach a node to the DOM and end the state
-				var xpi = (XProcessingInstruction) context.Nodes.Pop ();
-				
-				if (context.BuildTree) {
-					xpi.End (context.Offset);
-					((XContainer) context.Nodes.Peek ()).AddChildNode (xpi); 
-				}
-				return Parent;
-			} else {
-				context.StateTag = NOMATCH;
-			}
-			
-			return null;
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Error, message, ctx.Offset - 1));
+		}
+
+		public static void LogWarning (this IXmlParserContext ctx, string message)
+		{
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Warning, message, ctx.Offset - 1));
+		}
+
+		public static void LogError (this IXmlParserContext ctx, string message, int offset)
+		{
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Error, message, offset));
+		}
+
+		public static void LogWarning (this IXmlParserContext ctx, string message, int offset)
+		{
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Warning, message, offset));
+		}
+
+		public static void LogError (this IXmlParserContext ctx, string message, TextSpan span)
+		{
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Error, message, span));
+		}
+
+		public static void LogWarning (this IXmlParserContext ctx, string message, TextSpan span)
+		{
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Warning, message, span));
 		}
 	}
 }

@@ -30,32 +30,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
 
-using MonoDevelop.Components.Commands;
-using MonoDevelop.Core;
-using MonoDevelop.Ide;
-using MonoDevelop.Ide.CodeCompletion;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Ide.Tasks;
-using MonoDevelop.Ide.CodeFormatting;
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Completion;
+
 using MonoDevelop.Xml.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
-using MonoDevelop.Ide.Editor.Extension;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace MonoDevelop.Xml.Editor
 {
 	public class XmlTextEditorExtension : BaseXmlEditorExtension
 	{
+		IXmlSchemaService SchemaService;
+
 		const string TextXmlMimeType = "text/xml";
 		const string ApplicationXmlMimeType = "application/xml";
 		string stylesheetFileName;
-		XmlSchemaCompletionData defaultSchemaCompletionData;
+		XmlSchemaCompletionProvider defaultSchemaCompletionData;
 		string defaultNamespacePrefix;
 		InferredXmlCompletionProvider inferredCompletionData;
 		bool inferenceQueued;
@@ -178,24 +173,24 @@ namespace MonoDevelop.Xml.Editor
 				if (schema != null)
 					return schema.GetAttributeValueCompletionData (path, att.Name.FullName, token);
 			}
-			return Task.FromResult (new CompletionDataList ());
+			return Task.FromResult (new CompletionList ());
 		}
 		
 		#endregion
 		
 		#region From XmlCompletionDataProvider.cs
 		
-		public XmlSchemaCompletionData FindSchemaFromFileName (string fileName)
+		public XmlSchemaCompletionProvider FindSchemaFromFileName (string fileName)
 		{
-			return XmlSchemaManager.SchemaCompletionDataItems.GetSchemaFromFileName (fileName);
+			return SchemaService.GetSchemaFromFileName(fileName);
 		}
 		
-		public XmlSchemaCompletionData FindSchema (string namespaceUri)
+		public XmlSchemaCompletionProvider FindSchema (string namespaceUri)
 		{
-			return XmlSchemaManager.SchemaCompletionDataItems[namespaceUri];
+			return SchemaService.GetSchemaFromNamespace(namespaceUri);
 		}
 		
-		public XmlSchemaCompletionData FindSchema (XmlElementPath path)
+		public XmlSchemaCompletionProvider FindSchema (XmlElementPath path)
 		{
 			return FindSchema (XmlSchemaManager.SchemaCompletionDataItems, path);
 		}
@@ -206,7 +201,7 @@ namespace MonoDevelop.Xml.Editor
 
 		/// </summary>
 
-		public XmlSchemaCompletionData FindSchema (IXmlSchemaCompletionDataCollection schemaCompletionDataItems, XmlElementPath path)
+		public XmlSchemaCompletionProvider FindSchema (XmlElementPath path)
 
 		{
 
@@ -263,7 +258,7 @@ namespace MonoDevelop.Xml.Editor
 		/// <param name="currentSchemaCompletionData">This is the schema completion data for the schema currently being 
 		/// displayed. This can be null if the document is not a schema.</param>
 
-		public XmlSchemaObject GetSchemaObjectSelected (XmlSchemaCompletionData currentSchemaCompletionData)
+		public XmlSchemaObject GetSchemaObjectSelected (XmlSchemaCompletionProvider currentSchemaCompletionData)
 
 		{
 
@@ -286,7 +281,7 @@ namespace MonoDevelop.Xml.Editor
 			
 			// Find schema definition object.
 
-			XmlSchemaCompletionData schemaCompletionData = FindSchema (path);
+			XmlSchemaCompletionProvider schemaCompletionData = FindSchema (path);
 
 			XmlSchemaObject schemaObject = null;
 
@@ -348,7 +343,7 @@ namespace MonoDevelop.Xml.Editor
 
 		/// </returns>
 
-		XmlSchemaObject GetSchemaObjectReferenced (XmlSchemaCompletionData currentSchemaCompletionData, XmlSchemaElement element, XmlSchemaAttribute attribute)
+		XmlSchemaObject GetSchemaObjectReferenced (XmlSchemaCompletionProvider currentSchemaCompletionData, XmlSchemaElement element, XmlSchemaAttribute attribute)
 
 		{
 
@@ -433,13 +428,13 @@ namespace MonoDevelop.Xml.Editor
 
 		/// <returns><see langword="null"/> if no match can be found.</returns>
 
-		XmlSchemaObject FindSchemaObjectReference(string name, XmlSchemaCompletionData schemaCompletionData, string elementName)
+		XmlSchemaObject FindSchemaObjectReference(string name, XmlSchemaCompletionProvider schemaCompletionData, string elementName)
 
 		{
 
 			QualifiedName qualifiedName = schemaCompletionData.CreateQualifiedName(name);
 
-			XmlSchemaCompletionData qualifiedNameSchema = FindSchema(qualifiedName.Namespace);
+			XmlSchemaCompletionProvider qualifiedNameSchema = FindSchema(qualifiedName.Namespace);
 
 			if (qualifiedNameSchema != null) {
 
@@ -491,13 +486,13 @@ namespace MonoDevelop.Xml.Editor
 
 		/// <returns><see langword="null"/> if no match can be found.</returns>
 
-		XmlSchemaObject FindSchemaObjectType(string name, XmlSchemaCompletionData schemaCompletionData, string elementName)
+		XmlSchemaObject FindSchemaObjectType(string name, XmlSchemaCompletionProvider schemaCompletionData, string elementName)
 
 		{
 
 			QualifiedName qualifiedName = schemaCompletionData.CreateQualifiedName(name);
 
-			XmlSchemaCompletionData qualifiedNameSchema = FindSchema(qualifiedName.Namespace);
+			XmlSchemaCompletionProvider qualifiedNameSchema = FindSchema(qualifiedName.Namespace);
 
 			if (qualifiedNameSchema != null) {
 
@@ -714,36 +709,13 @@ namespace MonoDevelop.Xml.Editor
 			}
 		}
 		
-		[CommandHandler (XmlCommands.OpenStylesheet)]
-		public void OpenStylesheetCommand ()
-		{
-
-			if (!string.IsNullOrEmpty (stylesheetFileName)) {
-
-				try {
-
-					IdeApp.Workbench.OpenDocument (stylesheetFileName, DocumentContext.Project);
-
-				} catch (Exception ex) {
-					LoggingService.LogError ("Could not open document.", ex);
-					MessageService.ShowError ("Could not open document.", ex);
-				}
-			}
-		}
-		
-		[CommandUpdateHandler (XmlCommands.OpenStylesheet)]
-		public void UpdateOpenStylesheetCommand (CommandInfo info)
-		{
-			info.Enabled = !string.IsNullOrEmpty (stylesheetFileName);
-		}
-		
 		[CommandHandler (XmlCommands.GoToSchemaDefinition)]
 		public void GoToSchemaDefinitionCommand ()
 		{
 			try {
 				//try to resolve the schema
 
-				XmlSchemaCompletionData currentSchemaCompletionData = FindSchemaFromFileName (FileName);						
+				XmlSchemaCompletionProvider currentSchemaCompletionData = FindSchemaFromFileName (FileName);						
 
 				XmlSchemaObject schemaObject = GetSchemaObjectSelected (currentSchemaCompletionData);
 

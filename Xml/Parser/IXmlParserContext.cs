@@ -1,5 +1,5 @@
-// 
-// ILazilyLoadedProvider.cs
+﻿// 
+// Parser.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -26,13 +26,22 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
+using System.Text;
+using Microsoft.CodeAnalysis.Text;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Parser
 {
-	public interface ILazilyLoadedProvider
+	public interface IXmlParserContext
 	{
-		bool IsLoaded { get; }
-		void EnsureLoaded ();
+		int StateTag { get; set; }
+		StringBuilder KeywordBuilder { get; }
+		int CurrentStateLength { get; }
+		int Offset { get; }
+		XmlParserState PreviousState { get; }
+		NodeStack Nodes { get; }
+		bool BuildTree { get; }
+		void Log (XmlDiagnosticInfo diagnostic);
+		void EndAll (bool pop);
+		void ConnectAll ();
 	}
 }

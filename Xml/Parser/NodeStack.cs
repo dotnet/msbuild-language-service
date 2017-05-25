@@ -1,5 +1,5 @@
-// 
-// IXmlCompletionData.cs
+﻿// 
+// Parser.cs
 // 
 // Author:
 //   Mikayla Hutchinson <m.j.hutchinson@gmail.com>
@@ -26,25 +26,34 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
-using MonoDevelop.Xml.Editor;
+using System.Collections.Generic;
 
-namespace MonoDevelop.Xml.Completion
+using MonoDevelop.Xml.Dom;
+
+namespace MonoDevelop.Xml.Parser
 {
-	public interface IXmlCompletionProvider
+	public class NodeStack : Stack<XObject>
 	{
-		Task<CompletionDataList> GetElementCompletionData (CancellationToken token);
-		Task<CompletionDataList> GetElementCompletionData (string namespacePrefix, CancellationToken token);
-		
-		Task<CompletionDataList> GetChildElementCompletionData (XmlElementPath path, CancellationToken token);
-		Task<CompletionDataList> GetAttributeCompletionData (XmlElementPath path, CancellationToken token);
-		Task<CompletionDataList> GetAttributeValueCompletionData (XmlElementPath path, string name, CancellationToken token);
-		
-		Task<CompletionDataList> GetChildElementCompletionData (string tagName, CancellationToken token);
-		Task<CompletionDataList> GetAttributeCompletionData (string tagName, CancellationToken token);
-		Task<CompletionDataList> GetAttributeValueCompletionData (string tagName, string name, CancellationToken token);
+		public NodeStack (IEnumerable<XObject> collection) : base (collection) { }
+		public NodeStack () { }
+
+		public XObject Peek (int down)
+		{
+			int i = 0;
+			foreach (XObject o in this) {
+				if (i == down)
+					return o;
+				i++;
+			}
+			return null;
+		}
+
+		public XDocument GetRoot ()
+		{
+			XObject last = null;
+			foreach (XObject o in this)
+				last = o;
+			return last as XDocument;
+		}
 	}
 }

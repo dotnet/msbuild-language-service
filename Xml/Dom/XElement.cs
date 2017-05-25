@@ -1,4 +1,4 @@
-//
+﻿//
 // XElement.cs
 //
 // Author:
@@ -26,7 +26,7 @@
 
 using System.Collections.Generic;
 using System.Text;
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
@@ -35,12 +35,12 @@ namespace MonoDevelop.Xml.Dom
 		XNode closingTag;
 		readonly XAttributeCollection attributes;
 
-		public XElement (DocumentLocation start) : base (start)
+		public XElement (int startOffset) : base (startOffset)
 		{
 			attributes = new XAttributeCollection (this);
 		}
 
-		public XElement (DocumentLocation start, XName name) : this (start)
+		public XElement (int startOffset, XName name) : this (startOffset)
 		{
 			this.Name = name;
 		}
@@ -84,13 +84,13 @@ namespace MonoDevelop.Xml.Dom
 
 		public override string ToString ()
 		{
-			return string.Format ("[XElement Name='{0}' Location='{1}'", Name.FullName, Region);
+			return string.Format ("[XElement Name='{0}' Location='{1}'", Name.FullName, Span);
 		}
 
 		public override void BuildTreeString (StringBuilder builder, int indentLevel)
 		{
 			builder.Append (' ', indentLevel * 2);
-			builder.AppendFormat ("[XElement Name='{0}' Location='{1}' Children=", Name.FullName, Region);
+			builder.AppendFormat ("[XElement Name='{0}' Location='{1}' Children=", Name.FullName, Span);
 			builder.AppendLine ();
 
 			foreach (XNode child in Nodes)

@@ -1,4 +1,4 @@
-// 
+﻿// 
 // XmlFreeState.cs
 // 
 // Author:
@@ -27,7 +27,7 @@
 //
 
 using MonoDevelop.Xml.Dom;
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {
@@ -40,117 +40,100 @@ namespace MonoDevelop.Xml.Parser
 		protected const int CDATA = COMMENT + 1;
 		protected const int DOCTYPE = CDATA + 1;
 		protected const int MAXCONST = DOCTYPE;
-		
-		XmlTagState tagState;
-		XmlClosingTagState closingTagState;
-		XmlCommentState commentState;
-		XmlCDataState cDataState;
-		XmlDocTypeState docTypeState;
-		XmlProcessingInstructionState processingInstructionState;
-		
-		public XmlRootState () : this (new XmlTagState (), new XmlClosingTagState ()) {}
-		
+
+		public XmlRootState () : this (new XmlTagState (), new XmlClosingTagState ()) { }
+
 		public XmlRootState (XmlTagState tagState, XmlClosingTagState closingTagState)
 			: this (tagState, closingTagState, new XmlCommentState (), new XmlCDataState (),
-			  new XmlDocTypeState (), new XmlProcessingInstructionState ()) {}
-		
+			  new XmlDocTypeState (), new XmlProcessingInstructionState ())
+		{ }
+
 		public XmlRootState (
 			XmlTagState tagState,
 			XmlClosingTagState closingTagState,
 			XmlCommentState commentState,
 			XmlCDataState cDataState,
 			XmlDocTypeState docTypeState,
-		        XmlProcessingInstructionState processingInstructionState)
+				XmlProcessingInstructionState processingInstructionState)
 		{
-			this.tagState = tagState;
-			this.closingTagState = closingTagState;
-			this.commentState = commentState;
-			this.cDataState = cDataState;
-			this.docTypeState = docTypeState;
-			this.processingInstructionState = processingInstructionState;
-			
-			Adopt (this.TagState);
-			Adopt (this.ClosingTagState);
-			Adopt (this.CommentState);
-			Adopt (this.CDataState);
-			Adopt (this.DocTypeState);
-			Adopt (this.ProcessingInstructionState);
+			this.TagState = tagState;
+			this.ClosingTagState = closingTagState;
+			this.CommentState = commentState;
+			this.CDataState = cDataState;
+			this.DocTypeState = docTypeState;
+			this.ProcessingInstructionState = processingInstructionState;
+
+			Adopt (TagState);
+			Adopt (ClosingTagState);
+			Adopt (CommentState);
+			Adopt (CDataState);
+			Adopt (DocTypeState);
+			Adopt (ProcessingInstructionState);
 		}
-		
-		protected XmlTagState TagState { 
-			get { return tagState; } 
-		}
-		
-		protected XmlClosingTagState ClosingTagState { 
-			get { return closingTagState; } 
-		}
-		
-		protected XmlCommentState CommentState { 
-			get { return commentState; }
-		}
-		
-		protected XmlCDataState CDataState { 
-			get { return cDataState; } 
-		}
-		
-		protected XmlDocTypeState DocTypeState { 
-			get { return docTypeState; }
-		}
-		
-		protected XmlProcessingInstructionState ProcessingInstructionState { 
-			get { return processingInstructionState; } 
-		}
-		
+
+		protected XmlTagState TagState { get; }
+		protected XmlClosingTagState ClosingTagState { get; }
+		protected XmlCommentState CommentState { get; }
+		protected XmlCDataState CDataState { get; }
+		protected XmlDocTypeState DocTypeState { get; }
+		protected XmlProcessingInstructionState ProcessingInstructionState { get; }
+
 		public override XmlParserState PushChar (char c, IXmlParserContext context, ref string rollback)
 		{
 			if (c == '<') {
 				if (context.StateTag != FREE)
-					context.LogError ("Incomplete tag opening; encountered unexpected '<'.",
-						new DocumentRegion (
-							context.LocationMinus (LengthFromOpenBracket (context) + 1),
-							context.LocationMinus (1)));
+					context.LogError (
+						"Incomplete tag opening; encountered unexpected '<'.",
+						TextSpan.FromBounds (
+							context.Offset - LengthFromOpenBracket (context) - 1,
+							context.Offset - 1
+						)
+					);
 				context.StateTag = BRACKET;
 				return null;
 			}
-			
+
 			switch (context.StateTag) {
 			case FREE:
 				//FIXME: handle entities?
 				return null;
-				
+
 			case BRACKET:
-				if (c == '?') {
+				switch (c) {
+				case '?':
 					rollback = string.Empty;
-					return this.ProcessingInstructionState;
-				} else if (c == '!') {
+					return ProcessingInstructionState;
+				case '!':
 					context.StateTag = BRACKET_EXCLAM;
 					return null;
-				} else if (c == '/') {
-					return this.ClosingTagState;
-				} else if (char.IsLetter (c) || c == '_') {
+				case '/':
+					return ClosingTagState;
+				}
+				if (char.IsLetter (c) || c == '_') {
 					rollback = string.Empty;
 					return TagState;
 				}
 				break;
-				
+
 			case BRACKET_EXCLAM:
-				if (c == '[') {
+				switch (c) {
+				case '[':
 					context.StateTag = CDATA;
 					return null;
-				} else if (c == '-') {
+				case '-':
 					context.StateTag = COMMENT;
 					return null;
-				} else if (c == 'D') {
+				case 'D':
 					context.StateTag = DOCTYPE;
 					return null;
 				}
 				break;
-			
+
 			case COMMENT:
 				if (c == '-')
 					return CommentState;
 				break;
-				
+
 			case CDATA:
 				string cdataStr = "CDATA[";
 				if (c == cdataStr [context.KeywordBuilder.Length]) {
@@ -161,7 +144,7 @@ namespace MonoDevelop.Xml.Parser
 				}
 				context.KeywordBuilder.Length = 0;
 				break;
-				
+
 			case DOCTYPE:
 				string docTypeStr = "OCTYPE";
 				if (c == docTypeStr [context.KeywordBuilder.Length]) {
@@ -174,16 +157,16 @@ namespace MonoDevelop.Xml.Parser
 				}
 				break;
 			}
-			
+
 			context.LogError ("Incomplete tag opening; encountered unexpected character '" + c + "'.",
-				new DocumentRegion (
-					context.LocationMinus (LengthFromOpenBracket (context)),
-					context.Location));
-			
+				TextSpan.FromBounds (
+					context.Offset - LengthFromOpenBracket (context),
+					context.Offset));
+
 			context.StateTag = FREE;
 			return null;
 		}
-		
+
 		static int LengthFromOpenBracket (IXmlParserContext context)
 		{
 			switch (context.StateTag) {
@@ -200,7 +183,7 @@ namespace MonoDevelop.Xml.Parser
 				return 1;
 			}
 		}
-		
+
 		public virtual XDocument CreateDocument ()
 		{
 			return new XDocument ();

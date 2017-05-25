@@ -14,7 +14,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class XhtmlStrictSchemaTestFixture
 	{
-		XmlSchemaCompletionData schemaCompletionData;
+		XmlSchemaCompletionProvider schemaCompletionData;
 		XmlElementPath h1Path;
 		CompletionDataList h1Attributes;
 		string namespaceURI = "http://www.w3.org/1999/xhtml";
@@ -25,7 +25,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 				return;
 			
 			XmlTextReader reader = ResourceManager.GetXhtmlStrictSchema();
-			schemaCompletionData = new XmlSchemaCompletionData(reader);
+			schemaCompletionData = new XmlSchemaCompletionProvider(reader);
 			
 			// Set up h1 element's path.
 			h1Path = new XmlElementPath();

@@ -1,4 +1,4 @@
-//
+﻿//
 // XDocType.cs
 //
 // Author:
@@ -24,14 +24,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XDocType : XNode, INamedXObject
 	{
-		public XDocType (DocumentLocation start) : base (start) {}
-		public XDocType (DocumentRegion region) : base (region) {}
+		public XDocType (int startOffset) : base (startOffset) {}
+		public XDocType (TextSpan span) : base (span) {}
 
 		protected XDocType () {}
 		protected override XObject NewInstance () { return new XDocType (); }
@@ -39,7 +39,7 @@ namespace MonoDevelop.Xml.Dom
 		public XName RootElement { get; set; }
 		public string PublicFpi { get; set; }
 		public bool IsPublic { get { return PublicFpi != null; } }
-		public DocumentRegion InternalDeclarationRegion { get; set; }
+		public TextSpan InternalDeclarationRegion { get; set; }
 		public string Uri { get; set; }
 
 		public override string FriendlyPathRepresentation {

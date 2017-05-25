@@ -1,4 +1,4 @@
-//
+﻿//
 // XNode.cs
 //
 // Author:
@@ -24,14 +24,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public abstract class XNode : XObject
 	{
-		protected XNode (DocumentLocation start) : base (start) {}
-		protected XNode (DocumentRegion region) : base (region) {}
+		protected XNode (int startOffset) : base (startOffset) {}
+		protected XNode (TextSpan span) : base (span) {}
 		protected XNode () {}
 
 		public XNode NextSibling { get; internal protected set; }

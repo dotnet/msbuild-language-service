@@ -22,11 +22,11 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlSchemaCompletionDataCollection items = new XmlSchemaCompletionDataCollection();
 			
 			StringReader reader = new StringReader(GetSchema(firstNamespace));
-			XmlSchemaCompletionData schema = new XmlSchemaCompletionData(reader);
+			XmlSchemaCompletionProvider schema = new XmlSchemaCompletionProvider(reader);
 			items.Add(schema);
 			
 			reader = new StringReader(GetSchema(secondNamespace));
-			schema = new XmlSchemaCompletionData(reader);
+			schema = new XmlSchemaCompletionProvider(reader);
 			items.Add(schema);
 			namespaceCompletionData = new CompletionDataList(items.GetNamespaceCompletionData());
 		}

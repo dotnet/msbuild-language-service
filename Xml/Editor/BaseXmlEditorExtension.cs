@@ -206,7 +206,7 @@ namespace MonoDevelop.Xml.Editor
 			get { return tracker; }
 		}
 		
-		protected string GetBufferText (DocumentRegion region)
+		protected string GetBufferText (TextSpan span)
 		{
 			int start = Editor.LocationToOffset (region.BeginLine, region.BeginColumn);
 			int end = Editor.LocationToOffset (region.EndLine, region.EndColumn);
@@ -741,18 +741,18 @@ namespace MonoDevelop.Xml.Editor
 			//run the parser until the tag's closed, or we move to its sibling or parent
 			if (node != null) {
 				while (node.NextSibling == null &&
-					treeParser.Position < textLen && treeParser.Nodes.Peek () != ob.Parent)
+					treeParser.Offset < textLen && treeParser.Nodes.Peek () != ob.Parent)
 				{
-					char c = Editor.GetCharAt (treeParser.Position);
+					char c = Editor.GetCharAt (treeParser.Offset);
 					treeParser.Push (c);
 					if (el != null && el.IsClosed && el.ClosingTag.IsComplete)
 						break;
 				}
 			} else {
 				while (ob.Region.End < ob.Region.Begin &&
-			       		treeParser.Position < textLen && treeParser.Nodes.Peek () != ob.Parent)
+			       		treeParser.Offset < textLen && treeParser.Nodes.Peek () != ob.Parent)
 				{
-					char c = Editor.GetCharAt (treeParser.Position);
+					char c = Editor.GetCharAt (treeParser.Offset);
 					treeParser.Push (c);
 				}
 			}
@@ -770,13 +770,13 @@ namespace MonoDevelop.Xml.Editor
 				//pick out the locations, with some offsets to account for the parsing model
 				var s = contents? el.Region.End : el.Region.Begin;
 				var e = contents? el.ClosingTag.Region.Begin : el.ClosingTag.Region.End;
-				EditorSelect (new DocumentRegion (s, e));
+				EditorSelect (TextSpan.FromBounds (s, e));
 			} else {
 				LoggingService.LogDebug ("No end tag found for selection");
 			}
 		}
 		
-		protected void EditorSelect (DocumentRegion region)
+		protected void EditorSelect (TextSpan span)
 		{
 			int s = Editor.LocationToOffset (region.BeginLine, region.BeginColumn);
 			int e = Editor.LocationToOffset (region.EndLine, region.EndColumn);
@@ -1107,7 +1107,7 @@ namespace MonoDevelop.Xml.Editor
 			
 			var el = n as XElement;
 			if (el != null && el.IsClosed && el.ClosingTag.Region.End > region.End) {
-				region = new DocumentRegion (region.Begin, el.ClosingTag.Region.End);
+				region = new TextSpan (region.Begin, el.ClosingTag.Region.End);
 			}
 			EditorSelect (region);
 		}		

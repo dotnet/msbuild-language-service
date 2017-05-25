@@ -1,4 +1,4 @@
-//
+﻿//
 // XClosingTag.cs
 //
 // Author:
@@ -24,15 +24,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XClosingTag : XNode, INamedXObject
 	{
-		public XClosingTag (DocumentLocation start) : base (start) {}
+		public XClosingTag (int startOffset) : base (startOffset) {}
 
-		public XClosingTag (XName name, DocumentLocation start) : base (start)
+		public XClosingTag (XName name, int startOffset) : base (startOffset)
 		{
 			this.Name = name;
 		}

@@ -26,22 +26,22 @@
 
 using System.Collections.Generic;
 using System.Text;
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public abstract class XObject
 	{
-		DocumentRegion region;
+		TextSpan span;
 
-		protected XObject (DocumentLocation start)
+		protected XObject (int startOffset)
 		{
-			region = new DocumentRegion (start, DocumentLocation.Empty);
+			this.span = new TextSpan (startOffset, 0);
 		}
 
-		protected XObject (DocumentRegion region)
+		protected XObject (TextSpan span)
 		{
-			this.region = region;
+			this.span = span;
 		}
 
 		public XObject Parent { get; internal protected set; }
@@ -56,21 +56,27 @@ namespace MonoDevelop.Xml.Dom
 			}
 		}
 
-		public DocumentRegion Region {
-			get { return region; }
+		public TextSpan Span {
+			get { return span; }
 		}
 
-		public void End (DocumentLocation endLocation)
+		public void End (int end)
 		{
-			region = new DocumentRegion (region.Begin, endLocation);
+			span = TextSpan.FromBounds (span.Start, end);
 		}
 
+		/// <summary>
+		/// Whether this node is fully parsed i.e. has an end position.
+		/// </summary>
 		public bool IsEnded {
-			get { return region.End > region.Begin; }
+			get { return span.Length > 0; }
 		}
 
+		/// <summary>
+		/// Whether this node is complete i.e. has a many end node, if applicable.
+		/// </summary>
 		public virtual bool IsComplete {
-			get { return region.End > region.Begin; }
+			get { return IsEnded; }
 		}
 
 		public virtual void BuildTreeString (StringBuilder builder, int indentLevel)
@@ -82,7 +88,7 @@ namespace MonoDevelop.Xml.Dom
 
 		public override string ToString ()
 		{
-			return string.Format ("[{0} Location='{1}']", GetType (), Region);
+			return string.Format ("[{0} Location='{1}']", GetType (), span);
 		}
 
 		//creates a parallel tree -- should NOT retain references into old tree
@@ -97,7 +103,7 @@ namespace MonoDevelop.Xml.Dom
 
 		protected virtual void ShallowCopyFrom (XObject copyFrom)
 		{
-			region = copyFrom.region; //immutable value type
+			span = copyFrom.span;
 		}
 
 		protected XObject () {}

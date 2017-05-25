@@ -28,15 +28,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
-using MonoDevelop.Ide.CodeCompletion;
-using MonoDevelop.Xml.Editor;
 
 namespace MonoDevelop.Xml.Completion
 {
 	/// <summary>
 	/// Holds the completion (intellisense) data for an xml schema.
 	/// </summary>
-	public class XmlSchemaCompletionData : IXmlCompletionProvider
+	public class XmlSchemaCompletionProvider : XmlCompletionProvider
 	{
 		string namespaceUri = String.Empty;
 		XmlSchema schema = null;
@@ -53,7 +51,7 @@ namespace MonoDevelop.Xml.Completion
 		
 		#region Constructors
 		
-		public XmlSchemaCompletionData()
+		public XmlSchemaCompletionProvider()
 		{
 		}
 		
@@ -61,7 +59,7 @@ namespace MonoDevelop.Xml.Completion
 		/// Creates completion data from the schema passed in 
 		/// via the reader object.
 		/// </summary>
-		public XmlSchemaCompletionData(TextReader reader)
+		public XmlSchemaCompletionProvider(TextReader reader)
 		{
 			ReadSchema(String.Empty, reader);
 		}
@@ -70,7 +68,7 @@ namespace MonoDevelop.Xml.Completion
 		/// Creates completion data from the schema passed in 
 		/// via the reader object.
 		/// </summary>
-		public XmlSchemaCompletionData(XmlTextReader reader)
+		public XmlSchemaCompletionProvider(XmlTextReader reader)
 		{
 			reader.XmlResolver = null;
 			ReadSchema(reader);
@@ -79,7 +77,7 @@ namespace MonoDevelop.Xml.Completion
 		/// <summary>
 		/// Creates the completion data from the specified schema file.
 		/// </summary>
-		public XmlSchemaCompletionData (string fileName) : this (String.Empty, fileName)
+		public XmlSchemaCompletionProvider (string fileName) : this (String.Empty, fileName)
 		{
 		}
 		
@@ -87,12 +85,12 @@ namespace MonoDevelop.Xml.Completion
 		/// Creates the completion data from the specified schema file and uses
 		/// the specified baseUri to resolve any referenced schemas.
 		/// </summary>
-		public XmlSchemaCompletionData (string baseUri, string fileName) : this (baseUri, fileName, false)
+		public XmlSchemaCompletionProvider (string baseUri, string fileName) : this (baseUri, fileName, false)
 		{
 		}
 		
 		//lazyLoadFile should not be used when the namespace property needs to be read
-		public XmlSchemaCompletionData (string baseUri, string fileName, bool lazyLoadFile)
+		public XmlSchemaCompletionProvider (string baseUri, string fileName, bool lazyLoadFile)
 		{
 			this.fileName = fileName;
 			this.baseUri = baseUri;
@@ -144,12 +142,6 @@ namespace MonoDevelop.Xml.Completion
 			
 			return uri;
 		}
-		
-		#region ILazilyLoadedProvider implementation
-		
-		public bool IsLoaded {
-			get { return loaded; }
-		}
 
 		public void EnsureLoaded ()
 		{
@@ -177,78 +169,12 @@ namespace MonoDevelop.Xml.Completion
 				loaded = true;
 			});
 		}
-		#endregion
-		
-		#region Simplified API, useful for e.g. HTML
-		
-		public async Task<CompletionDataList> GetChildElementCompletionData (string tagName, CancellationToken token)
-		{
-			await EnsureLoadedAsync ();
-			
-			var list = new XmlCompletionDataList ();
-			var element = FindElement (tagName);
-			if (element != null)
-				GetChildElementCompletionData (list, element, "");
-			return list;
-		}
-		
-		public async Task<CompletionDataList> GetAttributeCompletionData (string tagName, CancellationToken token)
-		{
-			await EnsureLoadedAsync ();
-			
-			var list = new XmlCompletionDataList ();
-			var element = FindElement (tagName);
-			if (element != null) {
-				prohibitedAttributes.Clear();
-				GetAttributeCompletionData (list, element);
-			}
-			return list;
-		}
-		
-		public async Task<CompletionDataList> GetAttributeValueCompletionData (string tagName, string name, CancellationToken token)
-		{
-			await EnsureLoadedAsync ();
-			
-			var list = new XmlCompletionDataList ();
-			var element = FindElement (tagName);
-			if (element != null)
-				GetAttributeValueCompletionData (list, element, name);
-			return list;
-		}
-		
-		#endregion
-
-		/// <summary>
-		/// Gets the possible root elements for an xml document using this schema.
-		/// </summary>
-		public Task<CompletionDataList> GetElementCompletionData (CancellationToken token)
-		{
-			return GetElementCompletionData ("", token);
-		}
-		
-		/// <summary>
-		/// Gets the possible root elements for an xml document using this schema.
-		/// </summary>
-		public async Task<CompletionDataList> GetElementCompletionData (string namespacePrefix, CancellationToken token)
-		{
-			await EnsureLoadedAsync ();
-			
-			var data = new XmlCompletionDataList ();
-			foreach (XmlSchemaElement element in schema.Elements.Values) {
-				if (element.Name != null) {
-					data.AddElement (element.Name, namespacePrefix, element.Annotation);
-				} else {
-					// Do not add reference element.
-				}
-			}
-			return data;
-		}
 		
 		/// <summary>
 		/// Gets the attribute completion data for the xml element that exists
 		/// at the end of the specified path.
 		/// </summary>
-		public async Task<CompletionDataList> GetAttributeCompletionData (XmlElementPath path, CancellationToken token)
+		public async override Task<CompletionDataList> GetAttributeCompletionData (XmlElementPath path, CancellationToken token)
 		{
 			await EnsureLoadedAsync ();
 			
@@ -265,7 +191,7 @@ namespace MonoDevelop.Xml.Completion
 		/// Gets the child element completion data for the xml element that exists
 		/// at the end of the specified path.
 		/// </summary>
-		public async Task<CompletionDataList> GetChildElementCompletionData (XmlElementPath path, CancellationToken token)
+		public async override Task<CompletionDataList> GetChildElementCompletionData (XmlElementPath path, CancellationToken token)
 		{
 			await EnsureLoadedAsync ();
 			
@@ -281,7 +207,7 @@ namespace MonoDevelop.Xml.Completion
 		/// <summary>
 		/// Gets the autocomplete data for the specified attribute value.
 		/// </summary>
-		public async Task<CompletionDataList> GetAttributeValueCompletionData (XmlElementPath path, string name, CancellationToken token)
+		public async override Task<CompletionDataList> GetAttributeValueCompletionData (XmlElementPath path, string name, CancellationToken token)
 		{
 			await EnsureLoadedAsync ();
 			
@@ -299,9 +225,9 @@ namespace MonoDevelop.Xml.Completion
 		/// but is a useful method when locating an element so we can jump
 		/// to its schema definition.</remarks>
 		/// <returns><see langword="null"/> if no element can be found.</returns>
-		public XmlSchemaElement FindElement (XmlElementPath path)
+		public async Task<XmlSchemaElement> FindElement (XmlElementPath path)
 		{
-			EnsureLoaded ();
+			await EnsureLoadedAsync ();
 			
 			XmlSchemaElement element = null;
 			for (int i = 0; i < path.Elements.Count; ++i) {
@@ -330,9 +256,9 @@ namespace MonoDevelop.Xml.Completion
 		/// root of the schema so it will not find any elements
 		/// that are defined inside any complex types.
 		/// </remarks>
-		public XmlSchemaElement FindElement (QualifiedName name)
+		public async Task<XmlSchemaElement> FindElement (QualifiedName name)
 		{
-			EnsureLoaded();
+			await EnsureLoadedAsync();
 
 			foreach (XmlSchemaElement element in schema.Elements.Values) {
 				if (name.Equals (element.QualifiedName)) {

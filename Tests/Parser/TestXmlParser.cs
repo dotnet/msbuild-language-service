@@ -34,25 +34,19 @@ using MonoDevelop.Xml.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 using NUnit.Framework;
-using MonoDevelop.Ide.TypeSystem;
-using MonoDevelop.Ide.Editor;
+using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Tests.Parser
 {
 	public class TestXmlParser : XmlParser
 	{
-		readonly List<Error> errors = new List<Error> ();
-		
 		public TestXmlParser (XmlRootState rootState) : this (rootState, false)
 		{
 		}
 		
 		public TestXmlParser (XmlRootState rootState, bool buildTree) : base (rootState, buildTree)
 		{
-			ErrorLogged += errors.Add;
 		}
-		
-		public new List<Error> Errors { get { return errors; } }
 
 		public static void AssertState (string doc, params Action<TestXmlParser>[] asserts)
 		{
@@ -64,14 +58,14 @@ namespace MonoDevelop.Xml.Tests.Parser
 		{
 			var p = new TestXmlParser (new XmlRootState (), true);
 
-			//parse and capture line/col info
-			var list = new List<DocumentLocation> ();
-			p.Parse (txt, Array.ConvertAll (asserts, a => (Action)(() => list.Add (p.Location))));
+			//parse and capture span info
+			var list = new List<int> ();
+			p.Parse (txt, Array.ConvertAll (asserts, a => (Action)(() => list.Add (p.Offset))));
 
 			var doc = (XDocument) p.Nodes.Last ();
 
 			for (int i = 0; i < asserts.Length; i++) {
-				asserts [i] (doc.AllDescendentNodes.FirstOrDefault (n => n.Region.IsInside (list[i])));
+				asserts [i] (doc.AllDescendentNodes.FirstOrDefault (n => n.Span.Contains (list[i])));
 			}
 		}
 
@@ -82,7 +76,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 		
 		public void Parse (string doc, char trigger, params Action[] asserts)
 		{
-			Assert.AreEqual (Position, 0);
+			Assert.AreEqual (Offset, 0);
 			int assertNo = 0;
 			for (int i = 0; i < doc.Length; i++) {
 				char c = doc[i];
@@ -160,15 +154,15 @@ namespace MonoDevelop.Xml.Tests.Parser
 			AssertErrorCount (count, x => true);
 		}
 		
-		public void AssertErrorCount (int count, Func<Error,bool> filter)
+		public void AssertErrorCount (int count, Func<XmlDiagnosticInfo,bool> filter)
 		{
 			string msg = null;
-			int actualCount = errors.Count (filter);
+			var actualCount = Diagnostics.Count (filter);
 			if (actualCount != count) {
-				System.Text.StringBuilder sb = new System.Text.StringBuilder ();
-				foreach (Error err in errors)
+				var sb = new System.Text.StringBuilder ();
+				foreach (var err in Diagnostics)
 					if (filter (err))
-						sb.AppendFormat ("{0}@{1}: {2}\n", err.ErrorType, err.Region, err.Message);
+						sb.AppendFormat ("{0}@{1}: {2}\n", err.Severity, err.Span, err.Message);
 				msg = sb.ToString ();
 			}
 			Assert.AreEqual (count, actualCount, msg);

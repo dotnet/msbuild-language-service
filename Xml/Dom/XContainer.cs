@@ -1,4 +1,4 @@
-//
+﻿//
 // XContainer.cs
 //
 // Author:
@@ -26,13 +26,12 @@
 
 using System.Collections.Generic;
 using System.Text;
-using MonoDevelop.Ide.Editor;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public abstract class XContainer : XNode
 	{
-		protected XContainer (DocumentLocation start) : base (start) {	}
+		protected XContainer (int startOffset) : base (startOffset) {	}
 
 		XNode firstNode;
 		XNode lastChild;
