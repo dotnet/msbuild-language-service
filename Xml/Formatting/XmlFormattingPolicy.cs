@@ -88,14 +88,11 @@ namespace MonoDevelop.Xml.Formatting
 		
 		public XmlFormattingSettings ()
 		{
-			NewLineChars = "\n";
 			OmitXmlDeclaration = false;
 			IndentContent = true;
-			ContentIndentString = "\t";
 			
 			AttributesInNewLine = false;
 			MaxAttributesPerLine = 10;
-			AttributesIndentString = "\t";
 			AlignAttributes = false;
 			AlignAttributeValues = false;
 			WrapAttributes = false;
@@ -121,13 +118,10 @@ namespace MonoDevelop.Xml.Formatting
 				list.RemoveAt (n);
 			}
 			
-			return NewLineChars == other.NewLineChars &&
-				OmitXmlDeclaration == other.OmitXmlDeclaration &&
+			return OmitXmlDeclaration == other.OmitXmlDeclaration &&
 				IndentContent == other.IndentContent &&
-				ContentIndentString == other.ContentIndentString &&
 				AttributesInNewLine == other.AttributesInNewLine &&
 				MaxAttributesPerLine == other.MaxAttributesPerLine &&
-				AttributesIndentString == other.AttributesIndentString &&
 				AlignAttributes == other.AlignAttributes &&
 				WrapAttributes == other.WrapAttributes &&
 				AlignAttributeValues == other.AlignAttributeValues &&
@@ -153,20 +147,11 @@ namespace MonoDevelop.Xml.Formatting
 
 		public bool OmitXmlDeclaration { get; set; }
 
-		[TypeConverter (typeof (CStringsConverter))]
-		public string NewLineChars { get; set; }
-
 		public bool IndentContent { get; set; }
-
-        [TypeConverter(typeof(CStringsConverter))]
-        public string ContentIndentString { get; set; }
 
         public bool AttributesInNewLine { get; set; }
 
 		public int MaxAttributesPerLine { get; set; }
-
-		[TypeConverter (typeof (CStringsConverter))]
-		public string AttributesIndentString { get; set; }
 
 		public bool WrapAttributes { get; set; }
 
