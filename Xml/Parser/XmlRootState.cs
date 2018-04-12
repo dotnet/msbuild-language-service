@@ -108,7 +108,7 @@ namespace MonoDevelop.Xml.Parser
 				case '/':
 					return ClosingTagState;
 				}
-				if (char.IsLetter (c) || c == '_') {
+				if (char.IsLetter (c) || c == '_' || char.IsWhiteSpace (c)) {
 					rollback = string.Empty;
 					return TagState;
 				}
