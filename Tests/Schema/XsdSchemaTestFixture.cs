@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using System.IO;
 
 namespace MonoDevelop.Xml.Tests.Schema
 {
@@ -42,8 +43,9 @@ namespace MonoDevelop.Xml.Tests.Schema
 			if (schemaCompletionData != null)
 				return;
 			
-			var reader = ResourceManager.GetXsdSchema();
-			schemaCompletionData = new XmlSchemaCompletionProvider(reader);
+			using (var reader = new StreamReader (ResourceManager.GetXsdSchema(), true)) {
+				schemaCompletionData = new XmlSchemaCompletionProvider(reader);
+			}
 			
 			// Set up choice element's path.
 			choicePath = new XmlElementPath();

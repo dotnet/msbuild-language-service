@@ -5,6 +5,7 @@ using MonoDevelop.Xml.Tests.Utils;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using System.IO;
 
 namespace MonoDevelop.Xml.Tests.Schema
 {
@@ -23,10 +24,11 @@ namespace MonoDevelop.Xml.Tests.Schema
 		{
 			if (schemaCompletionData != null)
 				return;
-			
-			var reader = ResourceManager.GetXhtmlStrictSchema();
-			schemaCompletionData = new XmlSchemaCompletionProvider(reader);
-			
+
+			using (var reader = new StreamReader (ResourceManager.GetXhtmlStrictSchema (), true)) {
+				schemaCompletionData = new XmlSchemaCompletionProvider (reader);
+			}
+
 			// Set up h1 element's path.
 			h1Path = new XmlElementPath();
 			h1Path.Elements.Add(new QualifiedName("html", namespaceURI));
