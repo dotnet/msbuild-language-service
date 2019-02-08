@@ -230,8 +230,8 @@ namespace MonoDevelop.Xml.Tests.Parser
 			Assert.AreEqual ("html", dt.RootElement.FullName);
 			Assert.AreEqual ("-//W3C//DTD XHTML 1.0 Strict//EN", dt.PublicFpi);
 			Assert.AreEqual ("DTD/xhtml1-strict.dtd", dt.Uri);
-			Assert.AreEqual (dt.InternalDeclarationRegion.Start, 4);
-			Assert.AreEqual (dt.InternalDeclarationRegion.End, 7);
+			Assert.AreEqual (85, dt.InternalDeclarationRegion.Start);
+			Assert.AreEqual (112, dt.InternalDeclarationRegion.End);
 			parser.AssertNoErrors ();
 		}
 
