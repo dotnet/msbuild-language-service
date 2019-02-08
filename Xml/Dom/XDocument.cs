@@ -25,7 +25,6 @@
 // THE SOFTWARE.
 
 using System;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
@@ -46,6 +45,5 @@ namespace MonoDevelop.Xml.Dom
 				RootElement = (XElement) newChild;
 			base.AddChildNode (newChild);
 		}
-
 	}
 }

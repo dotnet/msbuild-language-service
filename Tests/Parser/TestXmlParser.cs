@@ -34,7 +34,6 @@ using MonoDevelop.Xml.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 using NUnit.Framework;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Tests.Parser
 {

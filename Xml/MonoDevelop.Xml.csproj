@@ -3,10 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="2.1.0" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Remove="Formatting\XmlFormatter.cs" />
     <Compile Remove="Formatting\XmlFormatterWriter.cs" />

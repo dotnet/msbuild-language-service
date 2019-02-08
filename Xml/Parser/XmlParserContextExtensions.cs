@@ -1,4 +1,4 @@
-﻿// 
+// 
 // Parser.cs
 // 
 // Author:
@@ -26,8 +26,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
+using MonoDevelop.Xml.Dom;
 
 namespace MonoDevelop.Xml.Parser
 {

@@ -31,7 +31,6 @@ using NUnit.Framework;
 
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
-using Microsoft.CodeAnalysis;
 
 
 namespace MonoDevelop.Xml.Tests.Parser

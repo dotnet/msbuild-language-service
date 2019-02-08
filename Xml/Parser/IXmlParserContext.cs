@@ -1,4 +1,4 @@
-﻿// 
+// 
 // Parser.cs
 // 
 // Author:
@@ -27,7 +27,6 @@
 //
 
 using System.Text;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {

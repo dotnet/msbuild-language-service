@@ -26,22 +26,19 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public abstract class XObject
 	{
-		TextSpan span;
-
 		protected XObject (int startOffset)
 		{
-			this.span = new TextSpan (startOffset, 0);
+			Span = new TextSpan (startOffset, 0);
 		}
 
 		protected XObject (TextSpan span)
 		{
-			this.span = span;
+			this.Span = span;
 		}
 
 		public XObject Parent { get; internal protected set; }
@@ -56,20 +53,18 @@ namespace MonoDevelop.Xml.Dom
 			}
 		}
 
-		public TextSpan Span {
-			get { return span; }
-		}
+		public TextSpan Span { get; private set; }
 
 		public void End (int end)
 		{
-			span = TextSpan.FromBounds (span.Start, end);
+			Span = TextSpan.FromBounds (Span.Start, end);
 		}
 
 		/// <summary>
 		/// Whether this node is fully parsed i.e. has an end position.
 		/// </summary>
 		public bool IsEnded {
-			get { return span.Length > 0; }
+			get { return Span.Length > 0; }
 		}
 
 		/// <summary>
@@ -88,7 +83,7 @@ namespace MonoDevelop.Xml.Dom
 
 		public override string ToString ()
 		{
-			return string.Format ("[{0} Location='{1}']", GetType (), span);
+			return string.Format ("[{0} Location='{1}']", GetType (), Span);
 		}
 
 		//creates a parallel tree -- should NOT retain references into old tree
@@ -103,7 +98,7 @@ namespace MonoDevelop.Xml.Dom
 
 		protected virtual void ShallowCopyFrom (XObject copyFrom)
 		{
-			span = copyFrom.span;
+			Span = copyFrom.Span;
 		}
 
 		protected XObject () {}

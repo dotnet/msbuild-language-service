@@ -1,4 +1,4 @@
-﻿// 
+// 
 // XmlDocTypeState.cs
 // 
 // Author:
@@ -28,7 +28,6 @@
 
 using System;
 using MonoDevelop.Xml.Dom;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {

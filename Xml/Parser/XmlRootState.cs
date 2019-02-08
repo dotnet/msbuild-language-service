@@ -1,4 +1,4 @@
-﻿// 
+// 
 // XmlFreeState.cs
 // 
 // Author:
@@ -27,7 +27,6 @@
 //
 
 using MonoDevelop.Xml.Dom;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Parser
 {

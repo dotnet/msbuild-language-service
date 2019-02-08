@@ -1,4 +1,4 @@
-﻿//
+//
 // XElement.cs
 //
 // Author:
@@ -26,18 +26,14 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.CodeAnalysis.Text;
 
 namespace MonoDevelop.Xml.Dom
 {
 	public class XElement : XContainer, IAttributedXObject
 	{
-		XNode closingTag;
-		readonly XAttributeCollection attributes;
-
 		public XElement (int startOffset) : base (startOffset)
 		{
-			attributes = new XAttributeCollection (this);
+			Attributes = new XAttributeCollection (this);
 		}
 
 		public XElement (int startOffset, XName name) : this (startOffset)
@@ -45,13 +41,13 @@ namespace MonoDevelop.Xml.Dom
 			this.Name = name;
 		}
 
-		public XNode ClosingTag { get { return closingTag; } }
-		public bool IsClosed { get { return closingTag != null; } }
-		public bool IsSelfClosing { get { return closingTag == this; } }
+		public XNode ClosingTag { get; private set; }
+		public bool IsClosed { get { return ClosingTag != null; } }
+		public bool IsSelfClosing { get { return ClosingTag == this; } }
 
 		public void Close (XNode closingTag)
 		{
-			this.closingTag = closingTag;
+			this.ClosingTag = closingTag;
 			if (closingTag is XClosingTag)
 				closingTag.Parent = this;
 		}
@@ -61,13 +57,11 @@ namespace MonoDevelop.Xml.Dom
 		public override bool IsComplete { get { return base.IsComplete && IsNamed; } }
 		public bool IsNamed { get { return Name.IsValid; } }
 
-		public XAttributeCollection Attributes {
-			get { return attributes; }
-		}
+		public XAttributeCollection Attributes { get; }
 
 		protected XElement ()
 		{
-			attributes = new XAttributeCollection (this);
+			Attributes = new XAttributeCollection (this);
 		}
 
 		protected override XObject NewInstance () { return new XElement (); }
@@ -103,10 +97,10 @@ namespace MonoDevelop.Xml.Dom
 			foreach (XAttribute att in Attributes)
 				att.BuildTreeString (builder, indentLevel + 1);
 
-			if (closingTag is XClosingTag) {
+			if (ClosingTag is XClosingTag) {
 				builder.AppendLine ("ClosingTag=");
-				closingTag.BuildTreeString (builder, indentLevel + 1);
-			} else if (closingTag == null)
+				ClosingTag.BuildTreeString (builder, indentLevel + 1);
+			} else if (ClosingTag == null)
 				builder.AppendLine ("ClosingTag=(null)");
 			else
 				builder.AppendLine ("ClosingTag=(Self)");

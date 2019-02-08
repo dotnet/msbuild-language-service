@@ -1,4 +1,4 @@
-﻿// 
+// 
 // Parser.cs
 // 
 // Author:
@@ -26,15 +26,14 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
+using MonoDevelop.Xml.Dom;
 
 namespace MonoDevelop.Xml.Parser
 {
 	public class XmlDiagnosticInfo
 	{
 		public XmlDiagnosticInfo (DiagnosticSeverity severity, string message, int offset)
-			: this (severity, message, new TextSpan(offset, 0)) {}
+			: this (severity, message, new TextSpan (offset, 0)) {}
 
 		public XmlDiagnosticInfo (DiagnosticSeverity severity, string message, TextSpan span)
 		{
@@ -46,5 +45,11 @@ namespace MonoDevelop.Xml.Parser
 		public DiagnosticSeverity Severity { get; }
 		public string Message { get; }
 		public TextSpan Span { get; }
+	}
+
+	public enum DiagnosticSeverity
+	{
+		Error,
+		Warning
 	}
 }
