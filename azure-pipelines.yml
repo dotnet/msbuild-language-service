@@ -80,8 +80,6 @@ jobs:
         ArtifactName: $(Agent.Os)_$(Agent.JobName)
       continueOnError: true
       condition: always()
-    variables:
-      _HelixBuildConfig: $(_BuildConfig)
 
 - template: /eng/common/templates/job/job.yml
   parameters:
@@ -130,8 +128,6 @@ jobs:
         ArtifactName: $(Agent.Os)_$(Agent.JobName)
       continueOnError: true
       condition: always()
-    variables:
-      _HelixBuildConfig: $(_BuildConfig)
 
 - template: /eng/common/templates/job/job.yml
   parameters:
@@ -180,5 +176,3 @@ jobs:
         ArtifactName: $(Agent.Os)_$(Agent.JobName)
       continueOnError: true
       condition: always()
-    variables:
-      _HelixBuildConfig: $(_BuildConfig)
