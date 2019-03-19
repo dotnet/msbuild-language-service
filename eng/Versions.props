@@ -3,5 +3,7 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
+
+    <UsingToolVSSDK>true</UsingToolVSSDK>
   </PropertyGroup>
 </Project>

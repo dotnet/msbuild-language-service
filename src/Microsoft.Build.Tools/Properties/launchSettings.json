@@ -1,0 +1,28 @@
+{
+  "profiles": {
+    "Start": {
+      "commandName": "Executable",
+      "executablePath": "$(DevEnvDir)devenv.exe",
+      "commandLineArgs": "/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log",
+      "environmentVariables": {
+      }
+    },
+    "Start (with native debugging)": {
+      "commandName": "Executable",
+      "executablePath": "$(DevEnvDir)devenv.exe",
+      "commandLineArgs": "/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log",
+      "environmentVariables": {
+      },
+      "nativeDebugging": true
+    },
+    "Start (with native debugging & no NGEN images)": {
+      "commandName": "Executable",
+      "executablePath": "$(DevEnvDir)devenv.exe",
+      "commandLineArgs": "/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log",
+      "environmentVariables": {
+        "COMPlus_ZapDisable": "1"
+      },
+      "nativeDebugging": true
+    }
+  }
+}
