@@ -1,135 +1,93 @@
 variables:
-- name: Build.Repository.Clean
-  value: true
-- name: _TeamName
-  value: DotNet-Project-System
-
-resources:
-  containers:
-  - container: LinuxContainer
-    image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
+  - name: Build.Repository.Clean
+    value: true
+  - name: _TeamName
+    value: DotNet-Project-System
 
 trigger:
-- master
-- release/*
+  - master
+  - release/*
 
 pr:
-- master
+  - master
 
 jobs:
-- template: /eng/common/templates/jobs/jobs.yml
-  parameters:
-    enablePublishBuildArtifacts: true
-    enablePublishTestResults: true
-    enableTelemetry: true
-    helixRepo: dotnet/msbuild-language-service
-    # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
-    ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      enableMicrobuild: true
-      enablePublishBuildAssets: true
-    jobs:
-    - job: Windows
-      pool:
-        # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
-        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-external-vs2019-preview
-        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          name: dotnet-internal-vs2019-preview
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
+      ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        enableMicrobuild: true
+        enablePublishBuildAssets: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      enableTelemetry: true
+      helixRepo: dotnet/msbuild-language-service
+      jobs:
+        - job: Windows
+          pool:
+            # agent pool can't be read from a user-defined variable (Azure DevOps limitation)
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              name: dotnet-external-vs2019-preview
             ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              _DotNetPublishToBlobFeed: true
-              _PublishArgs: /p:PublishToSymbolServer=true
-                /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-                /p:PublishToAzure=true
-                /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-                /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-      variables:
-      - _DotNetPublishToBlobFeed : false
-      - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/msbuild-language-service/index.json
-      - _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
-      - _BuildArgs: ''
-      - _OfficialBuildIdArgs: ''
-      
-      # Variables for internal Official builds
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - _SignType: real
-        - _BuildArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-            /p:OfficialBuildId=$(Build.BuildNumber) 
-            /p:ManifestBuildBranch=$(Build.SourceBranchName)
-            /p:ManifestBuildNumber=$(Build.BuildNumber)
-            /p:VisualStudioDropName=Products/MSBuild-Language-Service/$(Build.SourceBranchName)/$(Build.BuildNumber)
-
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - group: DotNet-Blob-Feed
-        - group: DotNet-Symbol-Server-Pats
-      steps:
-      - script: eng\common\cibuild.cmd 
-          -configuration $(_BuildConfig)
-          -prepareMachine
-          $(_BuildArgs)
-          $(_PublishArgs)
-        name: Build
-        displayName: Build
-        condition: succeeded()
-      # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
-      - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-        displayName: Detect components
-        condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
-      - task: PublishBuildArtifacts@1
-        displayName: Publish VSIX Artifacts
-        inputs:
-          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-          PublishLocation: Container
-          ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
-        continueOnError: true
-        condition: eq(variables['_BuildConfig'], 'Release')
-      - task: PublishBuildArtifacts@1
-        displayName: Publish package artifacts
-        inputs:
-          PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
-          PublishLocation: Container
-          ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-        continueOnError: true
-        condition: eq(variables['_BuildConfig'], 'Release')
-
-    - job: macOS
-      pool:
-        name: Hosted macOS
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
-      steps:
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
-
-    - job: Linux
-      pool:
-        name: Hosted Ubuntu 1604
-        container: LinuxContainer
-      strategy:
-        matrix:
-          debug:
-            _BuildConfig: Debug
-          release:
-            _BuildConfig: Release
-      steps:
-      - script: eng/common/cibuild.sh
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+              name: dotnet-internal-vs2019-preview
+          strategy:
+            matrix:
+              debug:
+                _BuildConfig: Debug
+              release:
+                _BuildConfig: Release
+                ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+                  _DotNetPublishToBlobFeed: true
+                  _PublishArgs: /p:PublishToSymbolServer=true
+                    /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+                    /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+                    /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+                    /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+                    /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+          variables:
+            - _DotNetPublishToBlobFeed : false
+            - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/msbuild-language-service/index.json
+            - _PublishArgs: '/p:PublishToSymbolServer=false'
+            - _BuildArgs: ''
+            - _OfficialBuildIdArgs: ''
+          
+          # Variables for internal Official builds
+          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+		    # TODO: Change when signing set up
+            - _SignType: test
+            - _BuildArgs: /p:DotNetSignType=$(_SignType)
+			    /p:TeamName=$(_TeamName)
+                /p:OfficialBuildId=$(Build.BuildNumber) 
+    
+          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            - group: DotNet-Blob-Feed
+            - group: DotNet-Symbol-Server-Pats
+          steps:
+          - script: eng\common\cibuild.cmd 
+              -configuration $(_BuildConfig)
+              -prepareMachine
+              $(_BuildArgs)
+              $(_PublishArgs)
+            name: Build
+            displayName: Build
+            condition: succeeded()
+          # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
+          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+            displayName: Detect components
+            condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+          - task: PublishBuildArtifacts@1
+            displayName: Publish VSIX Artifacts
+            inputs:
+              PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+              PublishLocation: Container
+              ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
+              continueOnError: true
+            condition: eq(variables['_BuildConfig'], 'Release')
+          - task: PublishBuildArtifacts@1
+            displayName: Publish package artifacts
+            inputs:
+              PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
+              PublishLocation: Container
+              ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
+            continueOnError: true
+            condition: eq(variables['_BuildConfig'], 'Release')
