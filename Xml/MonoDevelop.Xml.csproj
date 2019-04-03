@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="16.0.428" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Formatting\XmlFormatter.cs" />
     <Compile Remove="Formatting\XmlFormatterWriter.cs" />
     <Compile Remove="Formatting\XmlFormattingPolicy.cs" />
