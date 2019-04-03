@@ -34,7 +34,7 @@ using MonoDevelop.Xml.Dom;
 
 namespace MonoDevelop.Xml.Parser
 {
-	public class XmlParser : IXmlParserContext, ICloneable
+	public class XmlParser : IXmlParserContext, ICloneable, Editor.IForwardParser
 	{
 		XmlParserState previousState;
 		int stateTag;
@@ -57,7 +57,7 @@ namespace MonoDevelop.Xml.Parser
 			CurrentState = copyFrom.CurrentState;
 			previousState = copyFrom.previousState;
 
-			Offset = copyFrom.Offset;
+			Position = copyFrom.Position;
 			stateTag = copyFrom.stateTag;
 			keywordBuilder = new StringBuilder (copyFrom.keywordBuilder.ToString ());
 			CurrentStateLength = copyFrom.CurrentStateLength;
@@ -78,13 +78,13 @@ namespace MonoDevelop.Xml.Parser
 
 		#region IDocumentStateEngine
 
-		public int Offset { get; private set; }
+		public int Position { get; private set; }
 
 		public void Reset ()
 		{
 			CurrentState = RootState;
 			previousState = RootState;
-			Offset = 0;
+			Position = 0;
 			stateTag = 0;
 			keywordBuilder = new StringBuilder ();
 			CurrentStateLength = 0;
@@ -106,7 +106,7 @@ namespace MonoDevelop.Xml.Parser
 		{
 			try {
 				//FIXME: position/location should be at current char, not after it
-				Offset++;
+				Position++;
 
 				for (int loopLimit = 0; loopLimit < 10; loopLimit++) {
 					CurrentStateLength++;
@@ -142,13 +142,13 @@ namespace MonoDevelop.Xml.Parser
 					//Note the previous state is invalid for this operation.
 
 					//rollback position so it's valid
-					Offset -= (rollback.Length + 1);
+					Position -= (rollback.Length + 1);
 
 					foreach (char rollChar in rollback)
 						Push (rollChar);
 
 					//restore position
-					Offset++;
+					Position++;
 				}
 				throw new InvalidOperationException ("Too many state changes for char '" + c + "'. Current state is " + CurrentState.ToString () + ".");
 			} catch (Exception ex) {
@@ -183,7 +183,7 @@ namespace MonoDevelop.Xml.Parser
 		public override string ToString ()
 		{
 			StringBuilder builder = new StringBuilder ();
-			builder.AppendFormat ("[Parser Location={0} CurrentStateLength={1}", Offset, CurrentStateLength);
+			builder.AppendFormat ("[Parser Location={0} CurrentStateLength={1}", Position, CurrentStateLength);
 			builder.AppendLine ();
 
 			builder.Append (' ', 2);
@@ -269,7 +269,7 @@ namespace MonoDevelop.Xml.Parser
 			int popCount = 0;
 			foreach (XObject ob in Nodes) {
 				if (!ob.IsEnded && !(ob is XDocument)) {
-					ob.End (Offset);
+					ob.End (Position);
 					popCount++;
 				} else {
 					break;

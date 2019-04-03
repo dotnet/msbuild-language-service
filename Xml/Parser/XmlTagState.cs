@@ -61,7 +61,7 @@ namespace MonoDevelop.Xml.Parser
 			
 			if (element == null || element.IsComplete) {
 				var parent = element;
-				element = new XElement (context.Offset - 2); // 2 == < + current char
+				element = new XElement (context.Position - 2); // 2 == < + current char
 				element.Parent = parent;
 				context.Nodes.Push (element);
 			}
@@ -69,7 +69,7 @@ namespace MonoDevelop.Xml.Parser
 			if (c == '<') {
 				if (element.IsNamed) {
 					context.LogError ("Unexpected '<' in tag '" + element.Name.FullName + "'.");
-					Close (element, context, context.Offset - 1);
+					Close (element, context, context.Position - 1);
 				} else {
 					context.LogError ("Unexpected '<' in unnamed tag.");
 				}
@@ -98,7 +98,7 @@ namespace MonoDevelop.Xml.Parser
 				if (!element.IsNamed) {
 					context.LogError ("Tag closed prematurely.");
 				} else {
-					Close (element, context, context.Offset);
+					Close (element, context, context.Position);
 				}
 				return Parent;
 			}
@@ -135,7 +135,7 @@ namespace MonoDevelop.Xml.Parser
 			if (XmlChar.IsWhitespace (c))
 				return null;
 
-			context.LogError ("Unexpected character '" + c + "' in tag.", context.Offset - 1);
+			context.LogError ("Unexpected character '" + c + "' in tag.", context.Position - 1);
 			context.StateTag = ATTEMPT_RECOVERY;
 			return null;
 		}

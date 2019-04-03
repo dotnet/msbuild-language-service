@@ -84,8 +84,8 @@ namespace MonoDevelop.Xml.Parser
 					context.LogError (
 						"Incomplete tag opening; encountered unexpected '<'.",
 						TextSpan.FromBounds (
-							context.Offset - LengthFromOpenBracket (context) - 1,
-							context.Offset - 1
+							context.Position - LengthFromOpenBracket (context) - 1,
+							context.Position - 1
 						)
 					);
 				context.StateTag = BRACKET;
@@ -159,8 +159,8 @@ namespace MonoDevelop.Xml.Parser
 
 			context.LogError ("Incomplete tag opening; encountered unexpected character '" + c + "'.",
 				TextSpan.FromBounds (
-					context.Offset - LengthFromOpenBracket (context),
-					context.Offset));
+					context.Position - LengthFromOpenBracket (context),
+					context.Position));
 
 			context.StateTag = FREE;
 			return null;

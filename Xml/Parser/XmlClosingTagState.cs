@@ -54,7 +54,7 @@ namespace MonoDevelop.Xml.Parser
 				Debug.Assert (context.CurrentStateLength == 1,
 					"IncompleteNode must not be an XClosingTag when CurrentStateLength is 1");
 				
-				ct = new XClosingTag (context.Offset - 3); //3 = </ and the current char
+				ct = new XClosingTag (context.Position - 3); //3 = </ and the current char
 				context.Nodes.Push (ct);
 			}
 			
@@ -63,7 +63,7 @@ namespace MonoDevelop.Xml.Parser
 				context.Nodes.Pop ();
 				
 				if (ct.IsNamed) {
-					ct.End (context.Offset);
+					ct.End (context.Position);
 					
 					// walk up tree of parents looking for matching tag
 					int popCount = 0;
@@ -104,7 +104,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 			
 			if (c == '<') {
-				context.LogError ("Unexpected '<' in tag.", context.Offset - 1);
+				context.LogError ("Unexpected '<' in tag.", context.Position - 1);
 				context.Nodes.Pop ();
 				rollback = string.Empty;
 				return Parent;
@@ -120,7 +120,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 			
 			rollback = string.Empty;
-			context.LogError ("Unexpected character '" + c + "' in closing tag.", context.Offset - 1);
+			context.LogError ("Unexpected character '" + c + "' in closing tag.", context.Position - 1);
 			context.Nodes.Pop ();
 			return Parent;
 		}

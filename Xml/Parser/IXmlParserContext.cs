@@ -35,7 +35,7 @@ namespace MonoDevelop.Xml.Parser
 		int StateTag { get; set; }
 		StringBuilder KeywordBuilder { get; }
 		int CurrentStateLength { get; }
-		int Offset { get; }
+		int Position { get; }
 		XmlParserState PreviousState { get; }
 		NodeStack Nodes { get; }
 		bool BuildTree { get; }

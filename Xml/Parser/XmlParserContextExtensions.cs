@@ -34,12 +34,12 @@ namespace MonoDevelop.Xml.Parser
 	{
 		public static void LogError (this IXmlParserContext ctx, string message)
 		{
-			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Error, message, ctx.Offset - 1));
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Error, message, ctx.Position - 1));
 		}
 
 		public static void LogWarning (this IXmlParserContext ctx, string message)
 		{
-			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Warning, message, ctx.Offset - 1));
+			ctx.Log (new XmlDiagnosticInfo (DiagnosticSeverity.Warning, message, ctx.Position - 1));
 		}
 
 		public static void LogError (this IXmlParserContext ctx, string message, int offset)

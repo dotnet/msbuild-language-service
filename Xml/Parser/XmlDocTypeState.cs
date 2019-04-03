@@ -44,7 +44,7 @@ namespace MonoDevelop.Xml.Parser
 		{
 			var doc = context.Nodes.Peek () as XDocType;
 			if (doc == null) {
-				doc = new XDocType (context.Offset - "<!DOCTYPE".Length - 1);
+				doc = new XDocType (context.Position - "<!DOCTYPE".Length - 1);
 				context.Nodes.Push (doc);
 			}
 			
@@ -130,7 +130,7 @@ namespace MonoDevelop.Xml.Parser
 				switch (context.StateTag) {
 				case 0:
 					if (c == '[') {
-						doc.InternalDeclarationRegion = new TextSpan (context.Offset, 0);
+						doc.InternalDeclarationRegion = new TextSpan (context.Position, 0);
 						context.StateTag = 1;
 						return null;
 					}
@@ -141,7 +141,7 @@ namespace MonoDevelop.Xml.Parser
 						return null;
 					} else if (c == ']') {
 						context.StateTag = 0;
-						doc.InternalDeclarationRegion = TextSpan.FromBounds (doc.InternalDeclarationRegion.Start, context.Offset);
+						doc.InternalDeclarationRegion = TextSpan.FromBounds (doc.InternalDeclarationRegion.Start, context.Position);
 						return null;
 					}
 					break;
@@ -164,7 +164,7 @@ namespace MonoDevelop.Xml.Parser
 			}
 			
 			if (context.BuildTree) {
-				doc.End (context.Offset);
+				doc.End (context.Position);
 				((XContainer) context.Nodes.Peek ()).AddChildNode (doc); 
 			}
 			return Parent;

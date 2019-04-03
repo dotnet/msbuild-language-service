@@ -59,7 +59,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 
 			//parse and capture span info
 			var list = new List<int> ();
-			p.Parse (txt, Array.ConvertAll (asserts, a => (Action)(() => list.Add (p.Offset))));
+			p.Parse (txt, Array.ConvertAll (asserts, a => (Action)(() => list.Add (p.Position))));
 
 			var doc = (XDocument) p.Nodes.Last ();
 
@@ -75,7 +75,7 @@ namespace MonoDevelop.Xml.Tests.Parser
 		
 		public void Parse (string doc, char trigger, params Action[] asserts)
 		{
-			Assert.AreEqual (Offset, 0);
+			Assert.AreEqual (Position, 0);
 			int assertNo = 0;
 			for (int i = 0; i < doc.Length; i++) {
 				char c = doc[i];

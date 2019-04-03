@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Formatting\XmlFormatter.cs" />
     <Compile Remove="Formatting\XmlFormatterWriter.cs" />
@@ -23,6 +24,7 @@
     <Compile Remove="Completion\XmlSchemaCompletionProvider.cs" />
     <Compile Remove="Completion\IXmlSchemaService.cs" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="Formatting\XmlFormatter.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Formatting\XmlFormatterWriter.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
@@ -42,8 +44,5 @@
     <None Include="Completion\XmlSchemaCompletionDataCollection.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Completion\XmlSchemaCompletionProvider.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Completion\IXmlSchemaService.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

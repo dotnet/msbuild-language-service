@@ -74,7 +74,7 @@ namespace MonoDevelop.Xml.Parser
 				else if (context.PreviousState is XmlAttributeValueState) {
 					//Got value, so end attribute
 					context.Nodes.Pop ();
-					att.End (context.Offset - 1);
+					att.End (context.Position - 1);
 					IAttributedXObject element = (IAttributedXObject) context.Nodes.Peek ();
 					if (element.Attributes.Get (att.Name, false) != null) {
 						context.LogError ("'" + att.Name + "' is a duplicate attribute name.", att.Span);
@@ -87,7 +87,7 @@ namespace MonoDevelop.Xml.Parser
 					//starting a new attribute
 					Debug.Assert (att == null);
 					Debug.Assert (context.StateTag == NAMING);
-					att = new XAttribute (context.Offset - 1);
+					att = new XAttribute (context.Position - 1);
 					context.Nodes.Push (att);
 					rollback = string.Empty;
 					return XmlNameState;
