@@ -154,7 +154,7 @@ jobs:
       parameters:
         HelixSource: $(_HelixSource)
         HelixType: $(_HelixTestType)
-        HelixTargetQueues: Debian.9.Amd64.Open;Fedora.27.Amd64.Open;RedHat.7.Amd64.Open;Ubuntu.1604.Amd64.Open
+        HelixTargetQueues: Debian.9.Amd64.Open;Fedora.28.Amd64.Open;RedHat.7.Amd64.Open;Ubuntu.1604.Amd64.Open
         XUnitProjects: $(_XUnitProject)
         XUnitPublishTargetFramework: $(_XUnitTargetFramework)
         XUnitRuntimeTargetFramework: $(_XUnitTargetFramework)
