@@ -53,10 +53,10 @@ jobs:
           
           # Variables for internal Official builds
           - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-		    # TODO: Change when signing set up
+            # TODO: Change when signing set up
             - _SignType: test
             - _BuildArgs: /p:DotNetSignType=$(_SignType)
-			    /p:TeamName=$(_TeamName)
+                /p:TeamName=$(_TeamName)
                 /p:OfficialBuildId=$(Build.BuildNumber) 
     
           - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
