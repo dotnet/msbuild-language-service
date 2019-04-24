@@ -51,43 +51,43 @@ jobs:
             - _BuildArgs: ''
             - _OfficialBuildIdArgs: ''
           
-          # Variables for internal Official builds
-          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            # TODO: Change when signing set up
-            - _SignType: test
-            - _BuildArgs: /p:DotNetSignType=$(_SignType)
-                /p:TeamName=$(_TeamName)
-                /p:OfficialBuildId=$(Build.BuildNumber) 
+            # Variables for internal Official builds
+            - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              # TODO: Change when signing set up
+              - _SignType: test
+              - _BuildArgs: /p:DotNetSignType=$(_SignType)
+                  /p:TeamName=$(_TeamName)
+                  /p:OfficialBuildId=$(Build.BuildNumber) 
     
-          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            - group: DotNet-Blob-Feed
-            - group: DotNet-Symbol-Server-Pats
+            - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+              - group: DotNet-Blob-Feed
+              - group: DotNet-Symbol-Server-Pats
           steps:
-          - script: eng\common\cibuild.cmd 
-              -configuration $(_BuildConfig)
-              -prepareMachine
-              $(_BuildArgs)
-              $(_PublishArgs)
-            name: Build
-            displayName: Build
-            condition: succeeded()
-          # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
-          - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-            displayName: Detect components
-            condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
-          - task: PublishBuildArtifacts@1
-            displayName: Publish VSIX Artifacts
-            inputs:
-              PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-              PublishLocation: Container
-              ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
+            - script: eng\common\cibuild.cmd 
+                -configuration $(_BuildConfig)
+                -prepareMachine
+                $(_BuildArgs)
+                $(_PublishArgs)
+              name: Build
+              displayName: Build
+              condition: succeeded()
+            # Detect OSS Components in use in the product. Only needs to run on one OS in the matrix.
+            - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+              displayName: Detect components
+              condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false), eq(variables['_BuildConfig'], 'Release'))
+            - task: PublishBuildArtifacts@1
+              displayName: Publish VSIX Artifacts
+              inputs:
+                PathtoPublish: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
+                PublishLocation: Container
+                ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
+                continueOnError: true
+              condition: eq(variables['_BuildConfig'], 'Release')
+            - task: PublishBuildArtifacts@1
+              displayName: Publish package artifacts
+              inputs:
+                PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
+                PublishLocation: Container
+                ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
               continueOnError: true
-            condition: eq(variables['_BuildConfig'], 'Release')
-          - task: PublishBuildArtifacts@1
-            displayName: Publish package artifacts
-            inputs:
-              PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
-              PublishLocation: Container
-              ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-            continueOnError: true
-            condition: eq(variables['_BuildConfig'], 'Release')
+              condition: eq(variables['_BuildConfig'], 'Release')
