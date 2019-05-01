@@ -5,4 +5,11 @@
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
     <UsingToolVSSDK>true</UsingToolVSSDK>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+    </RestoreSources>
+  </PropertyGroup>
 </Project>
