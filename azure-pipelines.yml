@@ -14,12 +14,8 @@ pr:
 jobs:
   - template: /eng/common/templates/jobs/jobs.yml
     parameters:
-      # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
-      ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        enableMicrobuild: true
-        enablePublishBuildAssets: true
+      enableMicrobuild: true
       enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
       enableTelemetry: true
       helixRepo: dotnet/msbuild-language-service
       jobs:
@@ -36,18 +32,7 @@ jobs:
                 _BuildConfig: Debug
               release:
                 _BuildConfig: Release
-                ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-                  _DotNetPublishToBlobFeed: true
-                  _PublishArgs: /p:PublishToSymbolServer=true
-                    /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                    /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
-                    /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-                    /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-                    /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
           variables:
-            - _DotNetPublishToBlobFeed : false
-            - _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/msbuild-language-service/index.json
-            - _PublishArgs: '/p:PublishToSymbolServer=false'
             - _BuildArgs: ''
             - _OfficialBuildIdArgs: ''
           
@@ -58,16 +43,11 @@ jobs:
               - _BuildArgs: /p:DotNetSignType=$(_SignType)
                   /p:TeamName=$(_TeamName)
                   /p:OfficialBuildId=$(Build.BuildNumber) 
-    
-            - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-              - group: DotNet-Blob-Feed
-              - group: DotNet-Symbol-Server-Pats
           steps:
             - script: eng\common\cibuild.cmd 
                 -configuration $(_BuildConfig)
                 -prepareMachine
                 $(_BuildArgs)
-                $(_PublishArgs)
               name: Build
               displayName: Build
               condition: succeeded()
@@ -82,12 +62,4 @@ jobs:
                 PublishLocation: Container
                 ArtifactName: VSIX_$(Agent.Os)_$(Agent.JobName)
                 continueOnError: true
-              condition: eq(variables['_BuildConfig'], 'Release')
-            - task: PublishBuildArtifacts@1
-              displayName: Publish package artifacts
-              inputs:
-                PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
-                PublishLocation: Container
-                ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-              continueOnError: true
               condition: eq(variables['_BuildConfig'], 'Release')
