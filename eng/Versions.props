@@ -5,7 +5,6 @@
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
     <UsingToolVSSDK>true</UsingToolVSSDK>
   </PropertyGroup>
-
   <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
