@@ -40,7 +40,7 @@ jobs:
     enablePublishBuildArtifacts: true
     helixRepo: dotnet/arcade-minimalci-sample
     pool:
-      name: NetCorePublic-Int-Pool
+      name: NetCorePublic-Pool
       queue: BuildPool.Windows.10.Amd64.VS2017.Open
     strategy:
       matrix:
