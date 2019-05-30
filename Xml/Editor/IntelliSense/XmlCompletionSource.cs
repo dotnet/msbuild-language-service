@@ -26,6 +26,8 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 		public CompletionStartData InitializeCompletion (CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
 		{
+			return CompletionStartData.DoesNotParticipateInCompletion;
+			/*
 			var currentChar = trigger.Character;
 
 			bool forced = false;
@@ -34,17 +36,16 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 				forced = true;
 				break;
 			case CompletionTriggerReason.Backspace:
-				currentChar = triggerLocation.Position;
+				//currentChar = triggerLocation.Position;
 				break;
 			case CompletionTriggerReason.Insertion:
 				break;
 			default:
-				return CompletionStartData.DoesNotParticipateInCompletion
+				return CompletionStartData.DoesNotParticipateInCompletion;
 			}
 
 			var buf = triggerLocation.Snapshot;
 			var currentLocation = triggerLocation.Position;
-			char currentChar = trigger.Character;
 			char previousChar = currentLocation < 1? ' ' : buf[currentLocation - 1];
 
 			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2) triggerLocation.Snapshot.TextBuffer);
@@ -100,7 +101,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 					spine.Nodes.Peek (1) as IAttributedXObject;
 
 				if (attributedOb == null || !attributedOb.Name.IsValid)
-					return null;
+					return CompletionStartData.DoesNotParticipateInCompletion;
 
 				var currentIsNameStart = XmlNameState.IsValidNameStart (currentChar);
 				var currentIsWhiteSpace = char.IsWhiteSpace (currentChar);
@@ -110,7 +111,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 					|| (currentIsNameStart && previousIsWhiteSpace)
 					|| currentIsWhiteSpace;
 				if (!shouldTriggerAttributeCompletion)
-					return null;
+					return CompletionStartData.DoesNotParticipateInCompletion;
 
 				return new CompletionStartData (CompletionParticipation.ProvidesItems, new SnapshotSpan (triggerLocation, 0));
 			}
@@ -136,6 +137,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 			return null;
 
 			throw new NotImplementedException ();
+			*/
 		}
 	}
 
