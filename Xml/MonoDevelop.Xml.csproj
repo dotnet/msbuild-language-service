@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="16.0.428" />
-  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Formatting\XmlFormatter.cs" />
@@ -14,19 +10,6 @@
     <Compile Remove="Formatting\XmlFormattingPolicy.cs" />
     <Compile Remove="Formatting\XmlFormattingPolicyPanel.cs" />
     <Compile Remove="Formatting\XmlFormattingPolicyPanelWidget.cs" />
-    <Compile Remove="Editor\BaseXmlEditorExtension.cs" />
-    <Compile Remove="Editor\XmlDocumentParser.cs" />
-    <Compile Remove="Editor\XmlEditorOptions.cs" />
-    <Compile Remove="Editor\XmlParsedDocument.cs" />
-    <Compile Remove="Editor\XmlTextEditorExtension.cs" />
-    <Compile Remove="Completion\XmlCompletionData.cs" />
-    <Compile Remove="Completion\XmlCompletionDataList.cs" />
-    <Compile Remove="Completion\XmlMultipleClosingTagCompletionData.cs" />
-    <Compile Remove="Completion\XmlTagCompletionData.cs" />
-    <Compile Remove="Completion\InferredXmlCompletionProvider.cs" />
-    <Compile Remove="Completion\XmlSchemaCompletionDataCollection.cs" />
-    <Compile Remove="Completion\XmlSchemaCompletionProvider.cs" />
-    <Compile Remove="Completion\IXmlSchemaService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,18 +18,5 @@
     <None Include="Formatting\XmlFormattingPolicy.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Formatting\XmlFormattingPolicyPanel.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Formatting\XmlFormattingPolicyPanelWidget.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Editor\BaseXmlEditorExtension.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Editor\XmlDocumentParser.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Editor\XmlEditorOptions.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Editor\XmlParsedDocument.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Editor\XmlTextEditorExtension.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\XmlCompletionData.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\XmlCompletionDataList.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\XmlMultipleClosingTagCompletionData.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\XmlTagCompletionData.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\InferredXmlCompletionProvider.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\XmlSchemaCompletionDataCollection.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\XmlSchemaCompletionProvider.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Completion\IXmlSchemaService.cs" />
   </ItemGroup>
 </Project>

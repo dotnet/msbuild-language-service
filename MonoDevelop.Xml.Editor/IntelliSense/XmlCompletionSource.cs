@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
-using MonoDevelop.Xml.Dom;
-using MonoDevelop.Xml.Parser;
 
 namespace MonoDevelop.Xml.Editor.IntelliSense
 {
@@ -26,6 +24,9 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 		public CompletionStartData InitializeCompletion (CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
 		{
+			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2)triggerLocation.Snapshot.TextBuffer);
+			var spine = parser.GetSpineParser (triggerLocation);
+
 			return CompletionStartData.DoesNotParticipateInCompletion;
 			/*
 			var currentChar = trigger.Character;

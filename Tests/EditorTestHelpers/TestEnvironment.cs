@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using Microsoft.VisualStudio.MiniEditor;
 using Microsoft.VisualStudio.Threading;
+using MonoDevelop.Xml.Editor.IntelliSense;
 using MonoDevelop.Xml.Parser;
 using MonoDevelop.Xml.Tests.Completion;
 
@@ -43,6 +44,7 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 			// can be awaited instead if your framework supports it
 			EditorEnvironment = EditorEnvironment.InitializeAsync (
 				typeof (XmlParser).Assembly.Location,
+				typeof (XmlCompletionSource<,>).Assembly.Location,
 				typeof (TestEnvironment).Assembly.Location
 			).Result;
 

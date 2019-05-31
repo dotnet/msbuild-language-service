@@ -8,15 +8,15 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.Text;
+using MonoDevelop.Xml.Parser;
 
 // taken from MonoDevelop.Ide.Gui.Content and ported to VS editor
 namespace MonoDevelop.Xml.Editor
 {
-	public class ForwardParserCache<T> : IDisposable where T : IForwardParser
+	class ForwardParserCache<T> : IDisposable where T : IForwardParser
 	{
 		readonly Stack<T> cachedEngines = new Stack<T> ();
-
-		ITextBuffer2 buffer;
+		readonly ITextBuffer2 buffer;
 
 		public ForwardParserCache (T engine, ITextBuffer2 buffer)
 		{
@@ -108,12 +108,5 @@ namespace MonoDevelop.Xml.Editor
 				Console.WriteLine (e);
 			}
 		}
-	}
-
-	public interface IForwardParser : ICloneable
-	{
-		int Position { get; }
-		void Push (char c);
-		void Reset ();
 	}
 }

@@ -34,7 +34,7 @@ using MonoDevelop.Xml.Dom;
 
 namespace MonoDevelop.Xml.Parser
 {
-	public class XmlParser : IXmlParserContext, ICloneable, Editor.IForwardParser
+	public class XmlParser : IXmlParserContext, ICloneable, IForwardParser
 	{
 		XmlParserState previousState;
 		int stateTag;

@@ -19,7 +19,7 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 			return Catalog.TextViewFactory.CreateTextView (buffer);
 		}
 
-		public Task<ImmutableArray<CompletionItem>> GetCompletions (string documentText, CompletionTriggerReason reason = CompletionTriggerReason.Invoke, char triggerChar = '\0', char caretMarker = '$')
+		public Task<CompletionContext> GetCompletionContext (string documentText, CompletionTriggerReason reason = CompletionTriggerReason.Invoke, char triggerChar = '\0', char caretMarker = '$')
 		{
 			var caretOffset = documentText.IndexOf (caretMarker);
 			if (caretOffset < 0) {
@@ -28,10 +28,10 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 			documentText = documentText.Substring (0, caretOffset) + documentText.Substring (caretOffset + 1);
 
 			var textView = CreateTextView (documentText);
-			return GetCompletions (textView, caretOffset, reason, triggerChar);
+			return GetCompletionContext (textView, caretOffset, reason, triggerChar);
 		}
 
-		public async Task<ImmutableArray<CompletionItem>> GetCompletions (ITextView textView, int caretPosition, CompletionTriggerReason reason, char triggerChar, CancellationToken cancellationToken = default)
+		public async Task<CompletionContext> GetCompletionContext (ITextView textView, int caretPosition, CompletionTriggerReason reason, char triggerChar, CancellationToken cancellationToken = default)
 		{
 			var broker = Catalog.AsyncCompletionBroker;
 			var snapshot = textView.TextBuffer.CurrentSnapshot;
@@ -49,7 +49,7 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 				cancellationToken
 			);
 
-			return context.CompletionContext.Items;
+			return context.CompletionContext;
 		}
 	}
 }
