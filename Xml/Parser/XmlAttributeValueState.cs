@@ -31,14 +31,14 @@ namespace MonoDevelop.Xml.Parser
 {
 	public class XmlAttributeValueState : XmlParserState
 	{
-		protected const int FREE = 0;
-		protected const int UNQUOTED = 1;
-		protected const int SINGLEQUOTE = 2;
-		protected const int DOUBLEQUOTE = 3;
+		internal const int FREE = 0;
+		internal const int UNQUOTED = 1;
+		internal const int SINGLEQUOTE = 2;
+		internal const int DOUBLEQUOTE = 3;
 
 		//derived classes should use these if they need to store info in the tag
-		protected const int TagMask = 3;
-		protected const int TagShift = 2;
+		internal protected const int TagMask = 3;
+		internal protected const int TagShift = 2;
 
 		public override XmlParserState PushChar (char c, IXmlParserContext context, ref string rollback)
 		{

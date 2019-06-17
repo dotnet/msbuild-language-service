@@ -36,7 +36,7 @@ namespace MonoDevelop.Xml.Parser
 		internal const int ATTEMPT_RECOVERY = 1;
 		internal const int RECOVERY_FOUND_WHITESPACE = 2;
 		internal const int MAYBE_SELF_CLOSING = 2;
-		internal const int OK = 0;
+		internal const int FREE = 0;
 
 		readonly XmlAttributeState AttributeState;
 		readonly XmlNameState NameState;
@@ -120,7 +120,7 @@ namespace MonoDevelop.Xml.Parser
 					return null;
 			}
 
-			context.StateTag = OK;
+			context.StateTag = FREE;
 
 			if (!element.IsNamed && XmlChar.IsFirstNameChar (c)) {
 				rollback = string.Empty;

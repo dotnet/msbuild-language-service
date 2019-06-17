@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
@@ -29,21 +28,30 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 				switch (triggerResult.kind) {
 				case XmlCompletionTrigger.Element:
-					return await GetElementCompletions (nodePath, false, token);
 				case XmlCompletionTrigger.ElementWithBracket:
-					return await GetElementCompletions (nodePath, false, token);
+					//TODO: if it's on the first line and there's no XML declaration, add <"?xml version=\"1.0\" encoding=\"{encoding}\" ?>";
+					//TODO: if it's on the first or second line and there's no DTD declaration, add the DTDs, or at least <!DOCTYPE
+					//TODO: add closing tags // AddCloseTag (list, spine.Nodes);
+					//TODO: add snippets // MonoDevelop.Ide.CodeTemplates.CodeTemplateService.AddCompletionDataForFileName (DocumentContext.Name, list);
+					return await GetElementCompletionsAsync (nodePath, triggerResult.kind == XmlCompletionTrigger.ElementWithBracket, token);
+
 				case XmlCompletionTrigger.Attribute:
 					IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ?? spine.Nodes.Peek (1) as IAttributedXObject;
-					return await GetAttributeCompletions (nodePath, attributedOb, GetExistingAttributes (attributedOb), token);
+					return await GetAttributeCompletionsAsync (nodePath, attributedOb, GetExistingAttributes (attributedOb), token);
+
 				case XmlCompletionTrigger.AttributeValue:
 					if (spine.Nodes.Peek () is XAttribute att && spine.Nodes.Peek (1) is IAttributedXObject attributedObject) {
-						return await GetAttributeValueCompletions (nodePath, attributedObject, att, token);
+						return await GetAttributeValueCompletionsAsync (nodePath, attributedObject, att, token);
 					}
 					break;
+
 				case XmlCompletionTrigger.Entity:
-					return await GetEntityCompletions (nodePath, token);
+					return await GetEntityCompletionsAsync (nodePath, token);
+
 				case XmlCompletionTrigger.DocType:
-					return await GetDocTypeCompletions (nodePath, token);
+				case XmlCompletionTrigger.DocTypeOrCData:
+					// we delegate adding the CDATA completion to the subclass as only it knows whether character data is valid in that position
+					return await GetDocTypeCompletionsAsync (nodePath, triggerResult.kind == XmlCompletionTrigger.DocTypeOrCData, token);
 				}
 			}
 
@@ -65,126 +73,21 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 				spine.CurrentState, spine.CurrentStateLength, trigger.Character, trigger
 			);
 
-			var triggerResult = XmlCompletionTriggering.GetTrigger (spine, trigger.Character);
-			if (triggerResult.kind != XmlCompletionTrigger.None) {
-				return new CompletionStartData (CompletionParticipation.ProvidesItems, new SnapshotSpan (triggerLocation.Snapshot, triggerLocation.Position - triggerResult.length, triggerResult.length));
+			var (kind, length) = XmlCompletionTriggering.GetTrigger (spine, trigger.Character);
+			if (kind != XmlCompletionTrigger.None) {
+				return new CompletionStartData (CompletionParticipation.ProvidesItems, new SnapshotSpan (triggerLocation.Snapshot, triggerLocation.Position - length, length));
 			}
+
+			//TODO: closing tag completion after typing >
 
 			return CompletionStartData.DoesNotParticipateInCompletion;
-			/*
-			var currentChar = trigger.Character;
-
-			bool forced = false;
-			switch (trigger.Reason) {
-			case CompletionTriggerReason.InvokeAndCommitIfUnique:
-				forced = true;
-				break;
-			case CompletionTriggerReason.Backspace:
-				//currentChar = triggerLocation.Position;
-				break;
-			case CompletionTriggerReason.Insertion:
-				break;
-			default:
-				return CompletionStartData.DoesNotParticipateInCompletion;
-			}
-
-			var buf = triggerLocation.Snapshot;
-			var currentLocation = triggerLocation.Position;
-			char previousChar = currentLocation < 1? ' ' : buf[currentLocation - 1];
-
-			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2) triggerLocation.Snapshot.TextBuffer);
-			var spine = parser.GetSpineParser (triggerLocation);
-
-			//closing tag completion
-			if (spine.CurrentState is XmlRootState && currentChar == '>') {
-				return CompletionStartData.ParticipatesInCompletionIfAny;
-			}
-
-			//entity completion
-			if (currentChar == '&' && (spine.CurrentState is XmlRootState ||  spine.CurrentState is XmlAttributeValueState)) {
-				return CompletionStartData.ParticipatesInCompletionIfAny;
-			}
-
-			//doctype completion
-			if (spine.CurrentState is XmlDocTypeState) {
-				if (spine.CurrentStateLength == 1) {
-					return CompletionStartData.ParticipatesInCompletionIfAny;
-				}
-				return CompletionStartData.DoesNotParticipateInCompletion;
-			}
-
-			//attribute value completion
-			//determine whether to trigger completion within attribute values quotes
-			if ((spine.CurrentState is XmlAttributeValueState)
-				//trigger on the opening quote
-				&& ((spine.CurrentStateLength == 1 && (currentChar == '\'' || currentChar == '"'))
-				//or trigger on first letter of value, if unforced
-				|| (forced || spine.CurrentStateLength == 2))) {
-				var att = (XAttribute)spine.Nodes.Peek ();
-
-				if (att.IsNamed) {
-					var attributedOb = spine.Nodes.Peek (1) as IAttributedXObject;
-					if (attributedOb == null)
-						return CompletionStartData.DoesNotParticipateInCompletion;
-
-					//if triggered by first letter of value or forced, grab those letters
-					return CompletionStartData.ParticipatesInCompletionIfAny;
-				}
-			}
-
-			//attribute name completion
-			if ((forced && spine.Nodes.Peek () is IAttributedXObject && !spine.Nodes.Peek ().IsEnded)
-				 || ((spine.CurrentState is XmlNameState
-				&& spine.CurrentState.Parent is XmlAttributeState) ||
-				spine.CurrentState is XmlTagState)) {
-				IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ??
-					spine.Nodes.Peek (1) as IAttributedXObject;
-
-				if (attributedOb == null || !attributedOb.Name.IsValid)
-					return CompletionStartData.DoesNotParticipateInCompletion;
-
-				var currentIsNameStart = XmlNameState.IsValidNameStart (currentChar);
-				var currentIsWhiteSpace = char.IsWhiteSpace (currentChar);
-				var previousIsWhiteSpace = char.IsWhiteSpace (previousChar);
-
-				bool shouldTriggerAttributeCompletion = forced
-					|| (currentIsNameStart && previousIsWhiteSpace)
-					|| currentIsWhiteSpace;
-				if (!shouldTriggerAttributeCompletion)
-					return CompletionStartData.DoesNotParticipateInCompletion;
-
-				return new CompletionStartData (CompletionParticipation.ProvidesItems, new SnapshotSpan (triggerLocation, 0));
-			}
-
-			//element completion
-			if (currentChar == '<' && spine.CurrentState is XmlRootState ||
-				(spine.CurrentState is XmlNameState && forced)) {
-				var list = await GetElementCompletions (token);
-				if (completionContext.TriggerLine == 1 && completionContext.TriggerOffset == 1) {
-					var encoding = Editor.Encoding.WebName;
-					list.Add (new BaseXmlCompletionData ($"?xml version=\"1.0\" encoding=\"{encoding}\" ?>"));
-				}
-				AddCloseTag (list, spine.Nodes);
-				return list.Count > 0 ? list : null;
-			}
-
-			if (forced && spine.CurrentState is XmlRootState) {
-				var list = new CompletionDataList ();
-				MonoDevelop.Ide.CodeTemplates.CodeTemplateService.AddCompletionDataForFileName (DocumentContext.Name, list);
-				return list.Count > 0 ? list : null;
-			}
-
-			return null;
-
-			throw new NotImplementedException ();
-			*/
 		}
 
-		protected virtual Task<CompletionContext> GetElementCompletions (List<XObject> nodePath, bool includeBracket, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetAttributeCompletions (List<XObject> nodePath, IAttributedXObject attributedObject, Dictionary<string, string> existingAtts, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetAttributeValueCompletions (List<XObject> nodePath, IAttributedXObject attributedObject, XAttribute attribute, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetEntityCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetDocTypeCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetElementCompletionsAsync (List<XObject> nodePath, bool includeBracket, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetAttributeCompletionsAsync (List<XObject> nodePath, IAttributedXObject attributedObject, Dictionary<string, string> existingAtts, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetAttributeValueCompletionsAsync (List<XObject> nodePath, IAttributedXObject attributedObject, XAttribute attribute, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetEntityCompletionsAsync (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetDocTypeCompletionsAsync (List<XObject> nodePath, bool includeCData, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
 
 		protected List<XObject> GetNodePath (XmlParser spine, ITextSnapshot snapshot)
 		{

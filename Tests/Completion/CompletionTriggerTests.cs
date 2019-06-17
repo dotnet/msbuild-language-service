@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MonoDevelop.Xml.Editor.IntelliSense;
 using MonoDevelop.Xml.Parser;
 using NUnit.Framework;
@@ -22,6 +20,23 @@ namespace MonoDevelop.Xml.Tests.Completion
 		[TestCase("\"", '"', XmlCompletionTrigger.None)]
 		[TestCase("<", XmlCompletionTrigger.Element)]
 		[TestCase("<foo", '"', XmlCompletionTrigger.None)]
+		[TestCase ("<foo", ' ', XmlCompletionTrigger.Attribute)]
+		[TestCase ("<foo bar='1'   ", ' ', XmlCompletionTrigger.Attribute)]
+		[TestCase ("<foo ", XmlCompletionTrigger.Attribute)]
+		[TestCase ("<foo bar", XmlCompletionTrigger.Attribute, 3)]
+		[TestCase ("", '&', XmlCompletionTrigger.Entity)]
+		[TestCase ("<foo ", '&', XmlCompletionTrigger.None)]
+		[TestCase ("<foo bar='", '&', XmlCompletionTrigger.Entity)]
+		[TestCase ("<", '!', XmlCompletionTrigger.DocTypeOrCData, 2)]
+		[TestCase ("<!", XmlCompletionTrigger.DocTypeOrCData, 2)]
+		[TestCase ("<!DOCTYPE foo", XmlCompletionTrigger.DocType, 13)]
+		[TestCase ("<!DOC", XmlCompletionTrigger.DocType, 5)]
+		[TestCase ("<foo bar=\"", XmlCompletionTrigger.AttributeValue, 0)]
+		[TestCase ("<foo bar='", XmlCompletionTrigger.AttributeValue, 0)]
+		[TestCase ("<foo bar=", '"', XmlCompletionTrigger.AttributeValue, 0)]
+		[TestCase ("<foo bar=", '\'', XmlCompletionTrigger.AttributeValue, 0)]
+		[TestCase ("<foo bar='wxyz", XmlCompletionTrigger.AttributeValue, 4)]
+		[TestCase ("<foo bar=wxyz", XmlCompletionTrigger.None)]
 		public void TriggerTests (object[] args)
 		{
 			string doc = (string)args[0];
@@ -37,8 +52,8 @@ namespace MonoDevelop.Xml.Tests.Completion
 			spine.Parse (new StringReader (doc));
 
 			var result = XmlCompletionTriggering.GetTrigger (spine, triggerChar);
-			Assert.AreEqual (result.kind, kind);
-			Assert.AreEqual (result.length, length);
+			Assert.AreEqual (kind, result.kind);
+			Assert.AreEqual (length, result.length);
 		}
 	}
 }

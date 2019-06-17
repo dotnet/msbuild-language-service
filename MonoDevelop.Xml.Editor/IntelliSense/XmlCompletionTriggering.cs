@@ -41,6 +41,46 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 				return (XmlCompletionTrigger.Element, 0);
 			}
 
+			//entity completion
+			if (typedCharacter == '&' && (spine.CurrentState is XmlRootState || spine.CurrentState is XmlAttributeValueState)) {
+				return (XmlCompletionTrigger.Entity, 0);
+			}
+
+			//doctype/cdata completion, explicit trigger after <! or type ! after <
+			if ((isExplicit || typedCharacter == '!') && spine.CurrentState is XmlRootState && stateTag == XmlRootState.BRACKET_EXCLAM) {
+				return (XmlCompletionTrigger.DocTypeOrCData, 2);
+			}
+
+			//explicit trigger in existing doctype
+			if (isExplicit && ((spine.CurrentState is XmlRootState && stateTag == XmlRootState.DOCTYPE) || spine.Nodes.Peek () is XDocType)) {
+				int length = spine.CurrentState is XmlRootState ? spine.CurrentStateLength : spine.Position - ((XDocType)spine.Nodes.Peek ()).Span.Start;
+				return (XmlCompletionTrigger.DocType, length);
+			}
+
+			//explicit trigger in attribute name
+			if (isExplicit && spine.CurrentState is XmlNameState && spine.CurrentState.Parent is XmlAttributeState) {
+				return (XmlCompletionTrigger.Attribute, spine.CurrentStateLength);
+			}
+
+			//typed space or explicit trigger in tag
+			if ((isExplicit || typedCharacter == ' ') && spine.CurrentState is XmlTagState && stateTag == XmlTagState.FREE) {
+				return (XmlCompletionTrigger.Attribute, 0);
+			}
+
+			//attribute value completion on quote
+			if (spine.CurrentState is XmlAttributeValueState) {
+				if (isExplicit) {
+					var kind = (stateTag & XmlAttributeValueState.TagMask);
+					if (kind == XmlAttributeValueState.DOUBLEQUOTE || kind == XmlAttributeValueState.SINGLEQUOTE) {
+						return (XmlCompletionTrigger.AttributeValue, spine.CurrentStateLength - 1);
+					}
+				}
+				//trigger on typing opening quote
+				else if (spine.CurrentStateLength == 1 && (typedCharacter == '\'' || typedCharacter =='"')) {
+					return (XmlCompletionTrigger.AttributeValue, 0);
+				}
+			}
+
 			return (XmlCompletionTrigger.None, 0);
 		}
 	}
@@ -53,6 +93,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 		Attribute,
 		AttributeValue,
 		Entity,
-		DocType
+		DocType,
+		DocTypeOrCData
 	}
 }
