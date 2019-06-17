@@ -15,15 +15,23 @@ namespace MonoDevelop.Xml.Tests.Completion
 	public class CompletionTriggerTests
 	{
 		[Test]
+		[TestCase("", XmlCompletionTrigger.ElementWithBracket)]
 		[TestCase("<", XmlCompletionTrigger.Element)]
-		[TestCase("", '<', XmlCompletionTrigger.Element)]
-		[TestCase("<foo", XmlCompletionTrigger.Element, 3)]
+		[TestCase ("", '<', XmlCompletionTrigger.ElementWithBracket)]
+		[TestCase ("", 'a', XmlCompletionTrigger.None)]
+		[TestCase("\"", '"', XmlCompletionTrigger.None)]
+		[TestCase("<", XmlCompletionTrigger.Element)]
+		[TestCase("<foo", '"', XmlCompletionTrigger.None)]
 		public void TriggerTests (object[] args)
 		{
 			string doc = (string)args[0];
 			char triggerChar = (args[1] as char?) ?? '\0';
 			var kind = (XmlCompletionTrigger)(args[1] is char ? args[2] : args[1]);
 			int length = args[args.Length - 1] as int? ?? 0;
+
+			if (triggerChar != '\0') {
+				doc += triggerChar;
+			}
 
 			var spine = new XmlParser (new XmlRootState (), false);
 			spine.Parse (new StringReader (doc));

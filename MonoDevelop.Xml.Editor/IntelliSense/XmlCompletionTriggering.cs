@@ -21,6 +21,16 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 				return (XmlCompletionTrigger.Element, length);
 			}
 
+			//typed angle bracket in free space
+			if (typedCharacter == '<' && spine.CurrentState is XmlRootState && stateTag == XmlRootState.BRACKET) {
+				return (XmlCompletionTrigger.ElementWithBracket, 0);
+			}
+
+			//explicit invocation in free space
+			if (isExplicit && spine.CurrentState is XmlRootState && stateTag == XmlRootState.FREE) {
+				return (XmlCompletionTrigger.ElementWithBracket, 0);
+			}
+
 			// trigger on typing <
 			if (typedCharacter == '<' && spine.CurrentState is XmlRootState) {
 				return (XmlCompletionTrigger.Element, 0);
@@ -39,6 +49,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 	{
 		None,
 		Element,
+		ElementWithBracket,
 		Attribute,
 		AttributeValue,
 		Entity,

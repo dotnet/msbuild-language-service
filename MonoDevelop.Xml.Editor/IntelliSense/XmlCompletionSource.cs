@@ -29,7 +29,9 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 				switch (triggerResult.kind) {
 				case XmlCompletionTrigger.Element:
-					return await GetElementCompletions (nodePath, token);
+					return await GetElementCompletions (nodePath, false, token);
+				case XmlCompletionTrigger.ElementWithBracket:
+					return await GetElementCompletions (nodePath, false, token);
 				case XmlCompletionTrigger.Attribute:
 					IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ?? spine.Nodes.Peek (1) as IAttributedXObject;
 					return await GetAttributeCompletions (nodePath, attributedOb, GetExistingAttributes (attributedOb), token);
@@ -178,7 +180,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 			*/
 		}
 
-		protected virtual Task<CompletionContext> GetElementCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetElementCompletions (List<XObject> nodePath, bool includeBracket, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
 		protected virtual Task<CompletionContext> GetAttributeCompletions (List<XObject> nodePath, IAttributedXObject attributedObject, Dictionary<string, string> existingAtts, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
 		protected virtual Task<CompletionContext> GetAttributeValueCompletions (List<XObject> nodePath, IAttributedXObject attributedObject, XAttribute attribute, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
 		protected virtual Task<CompletionContext> GetEntityCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
