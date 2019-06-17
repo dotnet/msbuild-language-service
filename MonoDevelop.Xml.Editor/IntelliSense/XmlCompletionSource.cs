@@ -2,19 +2,50 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
+using MonoDevelop.Xml.Dom;
+using MonoDevelop.Xml.Parser;
 
 namespace MonoDevelop.Xml.Editor.IntelliSense
 {
 	public abstract class XmlCompletionSource<TParser,TResult> : IAsyncCompletionSource where TResult : XmlParseResult where TParser : XmlBackgroundParser<TResult>, new ()
 	{
-		public Task<CompletionContext> GetCompletionContextAsync (IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
+		public async Task<CompletionContext> GetCompletionContextAsync (IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
 		{
-			throw new NotImplementedException ();
+			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2)triggerLocation.Snapshot.TextBuffer);
+			var spine = parser.GetSpineParser (triggerLocation);
+
+			var triggerResult = await Task.Run (() => XmlCompletionTriggering.GetTrigger (spine, trigger.Character), token).ConfigureAwait (false);
+
+			if (triggerResult.kind != XmlCompletionTrigger.None) {
+				List<XObject> nodePath = GetNodePath (spine, triggerLocation.Snapshot);
+
+				switch (triggerResult.kind) {
+				case XmlCompletionTrigger.Element:
+					return await GetElementCompletions (nodePath, token);
+				case XmlCompletionTrigger.Attribute:
+					IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ?? spine.Nodes.Peek (1) as IAttributedXObject;
+					return await GetAttributeCompletions (nodePath, attributedOb, GetExistingAttributes (attributedOb), token);
+				case XmlCompletionTrigger.AttributeValue:
+					if (spine.Nodes.Peek () is XAttribute att && spine.Nodes.Peek (1) is IAttributedXObject attributedObject) {
+						return await GetAttributeValueCompletions (nodePath, attributedObject, att, token);
+					}
+					break;
+				case XmlCompletionTrigger.Entity:
+					return await GetEntityCompletions (nodePath, token);
+				case XmlCompletionTrigger.DocType:
+					return await GetDocTypeCompletions (nodePath, token);
+				}
+			}
+
+			return CompletionContext.Empty;
 		}
 
 		public Task<object> GetDescriptionAsync (IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
@@ -26,6 +57,16 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 		{
 			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2)triggerLocation.Snapshot.TextBuffer);
 			var spine = parser.GetSpineParser (triggerLocation);
+
+			LoggingService.LogDebug (
+				"Attempting completion for state '{0}'x{1}, character='{2}', trigger='{3}'",
+				spine.CurrentState, spine.CurrentStateLength, trigger.Character, trigger
+			);
+
+			var triggerResult = XmlCompletionTriggering.GetTrigger (spine, trigger.Character);
+			if (triggerResult.kind != XmlCompletionTrigger.None) {
+				return new CompletionStartData (CompletionParticipation.ProvidesItems, new SnapshotSpan (triggerLocation.Snapshot, triggerLocation.Position - triggerResult.length, triggerResult.length));
+			}
 
 			return CompletionStartData.DoesNotParticipateInCompletion;
 			/*
@@ -51,10 +92,6 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2) triggerLocation.Snapshot.TextBuffer);
 			var spine = parser.GetSpineParser (triggerLocation);
-
-			LoggingService.LogDebug ("Attempting completion for state '{0}'x{1}, previousChar='{2}',"
-				+ " currentChar='{3}', forced='{4}'", spine.CurrentState,
-				spine.CurrentStateLength, previousChar, currentChar, forced);
 
 			//closing tag completion
 			if (spine.CurrentState is XmlRootState && currentChar == '>') {
@@ -140,13 +177,68 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 			throw new NotImplementedException ();
 			*/
 		}
-	}
 
-	internal class LoggingService
-	{
-		internal static void LogDebug (string v, object currentState, object currentStateLength, char previousChar, char currentChar, object forced)
+		protected virtual Task<CompletionContext> GetElementCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetAttributeCompletions (List<XObject> nodePath, IAttributedXObject attributedObject, Dictionary<string, string> existingAtts, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetAttributeValueCompletions (List<XObject> nodePath, IAttributedXObject attributedObject, XAttribute attribute, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetEntityCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetDocTypeCompletions (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+
+		protected List<XObject> GetNodePath (XmlParser spine, ITextSnapshot snapshot)
 		{
-			throw new NotImplementedException ();
+			var path = new List<XObject> (spine.Nodes);
+
+			//remove the root XDocument
+			path.RemoveAt (path.Count - 1);
+
+			//complete incomplete XName if present
+			if (spine.CurrentState is XmlNameState && path[0] is INamedXObject) {
+				path[0] = path[0].ShallowCopy ();
+				XName completeName = GetCompleteName (spine, snapshot);
+				((INamedXObject)path[0]).Name = completeName;
+			}
+			path.Reverse ();
+			return path;
+		}
+
+		protected XName GetCompleteName (XmlParser spine, ITextSnapshot snapshot)
+		{
+			Debug.Assert (spine.CurrentState is XmlNameState);
+
+			int end = spine.Position;
+			int start = end - spine.CurrentStateLength;
+			int mid = -1;
+
+			int limit = Math.Min (snapshot.Length, end + 35);
+
+			//try to find the end of the name, but don't go too far
+			for (; end < limit; end++) {
+				char c = snapshot[end];
+
+				if (c == ':') {
+					if (mid == -1)
+						mid = end;
+					else
+						break;
+				} else if (!XmlChar.IsNameChar (c))
+					break;
+			}
+
+			if (mid > 0 && end > mid + 1) {
+				return new XName (snapshot.GetText(start, mid - start), snapshot.GetText (mid + 1, end - mid -1));
+			}
+			return new XName (snapshot.GetText (start, end - start));
+		}
+
+		//FIXME: include attributes ahead of the current position. 
+		static Dictionary<string, string> GetExistingAttributes (IAttributedXObject attributedOb)
+		{
+			var existingAtts = new Dictionary<string, string> (StringComparer.OrdinalIgnoreCase);
+			foreach (XAttribute a in attributedOb.Attributes) {
+				existingAtts[a.Name.FullName] = a.Value ?? string.Empty;
+			}
+
+			return existingAtts;
 		}
 	}
 }

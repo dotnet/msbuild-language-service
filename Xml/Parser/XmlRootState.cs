@@ -32,13 +32,13 @@ namespace MonoDevelop.Xml.Parser
 {
 	public class XmlRootState : XmlParserState
 	{
-		protected const int FREE = 0;
-		protected const int BRACKET = FREE + 1;
-		protected const int BRACKET_EXCLAM = BRACKET + 1;
-		protected const int COMMENT = BRACKET_EXCLAM + 1;
-		protected const int CDATA = COMMENT + 1;
-		protected const int DOCTYPE = CDATA + 1;
-		protected const int MAXCONST = DOCTYPE;
+		internal const int FREE = 0;
+		internal const int BRACKET = FREE + 1;
+		internal const int BRACKET_EXCLAM = BRACKET + 1;
+		internal const int COMMENT = BRACKET_EXCLAM + 1;
+		internal const int CDATA = COMMENT + 1;
+		internal const int DOCTYPE = CDATA + 1;
+		internal const int MAXCONST = DOCTYPE;
 
 		public XmlRootState () : this (new XmlTagState (), new XmlClosingTagState ()) { }
 

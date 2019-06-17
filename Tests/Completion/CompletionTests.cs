@@ -41,9 +41,15 @@ namespace MonoDevelop.Xml.Tests.Completion
 		public override IContentType ContentType => Catalog.ContentTypeRegistryService.GetContentType (CompletionTestContentType.Name);
 
 		[Test]
-		public async Task TestCompletion ()
+		public async Task TestElementStartCompletion ()
 		{
 			var result = await GetCompletionContext ("<$");
+			Assert.Zero (result.Items.Length);
+		}
+
+		public async Task TestElementNameCompletionInvocation ()
+		{
+			var result = await GetCompletionContext ("<foo$");
 			Assert.Zero (result.Items.Length);
 		}
 	}

@@ -1,4 +1,4 @@
-﻿// 
+// 
 // XmlTagState.cs
 // 
 // Author:
@@ -33,10 +33,10 @@ namespace MonoDevelop.Xml.Parser
 {
 	public class XmlTagState : XmlParserState
 	{
-		const int ATTEMPT_RECOVERY = 1;
-		const int RECOVERY_FOUND_WHITESPACE = 2;
-		const int MAYBE_SELF_CLOSING = 2;
-		const int OK = 0;
+		internal const int ATTEMPT_RECOVERY = 1;
+		internal const int RECOVERY_FOUND_WHITESPACE = 2;
+		internal const int MAYBE_SELF_CLOSING = 2;
+		internal const int OK = 0;
 
 		readonly XmlAttributeState AttributeState;
 		readonly XmlNameState NameState;
