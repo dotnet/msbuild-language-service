@@ -13,7 +13,11 @@ namespace MonoDevelop.Xml.Tests.Completion
 	public class CompletionTriggerTests
 	{
 		[Test]
-		[TestCase("", XmlCompletionTrigger.ElementWithBracket)]
+		// params are: document text, typedChar, trigger result, length
+		//    typedChar and length can be omitted and default to \0 and zero
+		//	  if typedChar is \0, it's treated as explicitly invoking the command
+		//    if typedChar is provided, it's added to the document text
+		[TestCase ("", XmlCompletionTrigger.ElementWithBracket)]
 		[TestCase("<", XmlCompletionTrigger.Element)]
 		[TestCase ("", '<', XmlCompletionTrigger.ElementWithBracket)]
 		[TestCase ("", 'a', XmlCompletionTrigger.None)]
@@ -40,18 +44,18 @@ namespace MonoDevelop.Xml.Tests.Completion
 		public void TriggerTests (object[] args)
 		{
 			string doc = (string)args[0];
-			char triggerChar = (args[1] as char?) ?? '\0';
+			char typedChar = (args[1] as char?) ?? '\0';
 			var kind = (XmlCompletionTrigger)(args[1] is char ? args[2] : args[1]);
 			int length = args[args.Length - 1] as int? ?? 0;
 
-			if (triggerChar != '\0') {
-				doc += triggerChar;
+			if (typedChar != '\0') {
+				doc += typedChar;
 			}
 
 			var spine = new XmlParser (new XmlRootState (), false);
 			spine.Parse (new StringReader (doc));
 
-			var result = XmlCompletionTriggering.GetTrigger (spine, triggerChar);
+			var result = XmlCompletionTriggering.GetTrigger (spine, typedChar);
 			Assert.AreEqual (kind, result.kind);
 			Assert.AreEqual (length, result.length);
 		}
