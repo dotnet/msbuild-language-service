@@ -1,11 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
+using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Editor;
 using MonoDevelop.Xml.Editor.IntelliSense;
 using MonoDevelop.Xml.Tests.EditorTestHelpers;
@@ -33,6 +37,13 @@ namespace MonoDevelop.Xml.Tests.Completion
 
 	class XmlCompletionTestSource : XmlCompletionSource<XmlBackgroundParser,XmlParseResult>
 	{
+		protected override Task<CompletionContext> GetElementCompletionsAsync (List<XObject> nodePath, bool includeBracket, CancellationToken token)
+		{
+			CompletionItem item = new CompletionItem ("Hello", this);
+			var items = ImmutableArray<CompletionItem>.Empty;
+			items = items.Add (item);
+			return Task.FromResult (new CompletionContext (items));
+		}
 	}
 
 	[TestFixture]
@@ -44,13 +55,16 @@ namespace MonoDevelop.Xml.Tests.Completion
 		public async Task TestElementStartCompletion ()
 		{
 			var result = await GetCompletionContext ("<$");
-			Assert.Zero (result.Items.Length);
+			Assert.AreEqual (1, result.Items.Length);
+			Assert.AreEqual ("Hello", result.Items[0].DisplayText);
 		}
 
+		[Test]
 		public async Task TestElementNameCompletionInvocation ()
 		{
 			var result = await GetCompletionContext ("<foo$");
-			Assert.Zero (result.Items.Length);
+			Assert.AreEqual (1, result.Items.Length);
+			Assert.AreEqual ("Hello", result.Items[0].DisplayText);
 		}
 	}
 }
