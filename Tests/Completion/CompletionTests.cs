@@ -37,9 +37,17 @@ namespace MonoDevelop.Xml.Tests.Completion
 
 	class XmlCompletionTestSource : XmlCompletionSource<XmlBackgroundParser,XmlParseResult>
 	{
-		protected override Task<CompletionContext> GetElementCompletionsAsync (List<XObject> nodePath, bool includeBracket, CancellationToken token)
+		public XmlCompletionTestSource (ITextView textView) : base (textView)
 		{
-			CompletionItem item = new CompletionItem ("Hello", this);
+		}
+
+		protected override Task<CompletionContext> GetElementCompletionsAsync (
+			SnapshotPoint triggerLocation,
+			List<XObject> nodePath,
+			bool includeBracket,
+			CancellationToken token)
+		{
+			var item = new CompletionItem ("Hello", this);
 			var items = ImmutableArray<CompletionItem>.Empty;
 			items = items.Add (item);
 			return Task.FromResult (new CompletionContext (items));

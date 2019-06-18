@@ -15,9 +15,14 @@ using MonoDevelop.Xml.Parser;
 
 namespace MonoDevelop.Xml.Editor.IntelliSense
 {
-	public abstract class XmlCompletionSource<TParser,TResult> : IAsyncCompletionSource where TResult : XmlParseResult where TParser : XmlBackgroundParser<TResult>, new ()
+	public abstract class XmlCompletionSource<TParser, TResult> : IAsyncCompletionSource where TResult : XmlParseResult where TParser : XmlBackgroundParser<TResult>, new()
 	{
-		public async Task<CompletionContext> GetCompletionContextAsync (IAsyncCompletionSession session, CompletionTrigger trigger, SnapshotPoint triggerLocation, SnapshotSpan applicableToSpan, CancellationToken token)
+		public async Task<CompletionContext> GetCompletionContextAsync (
+			IAsyncCompletionSession session,
+			CompletionTrigger trigger,
+			SnapshotPoint triggerLocation,
+			SnapshotSpan applicableToSpan,
+			CancellationToken token)
 		{
 			var parser = BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2)triggerLocation.Snapshot.TextBuffer);
 			var spine = parser.GetSpineParser (triggerLocation);
@@ -34,32 +39,35 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 					//TODO: if it's on the first or second line and there's no DTD declaration, add the DTDs, or at least <!DOCTYPE
 					//TODO: add closing tags // AddCloseTag (list, spine.Nodes);
 					//TODO: add snippets // MonoDevelop.Ide.CodeTemplates.CodeTemplateService.AddCompletionDataForFileName (DocumentContext.Name, list);
-					return await GetElementCompletionsAsync (nodePath, triggerResult.kind == XmlCompletionTrigger.ElementWithBracket, token);
+					return await GetElementCompletionsAsync (triggerLocation, nodePath, triggerResult.kind == XmlCompletionTrigger.ElementWithBracket, token);
 
 				case XmlCompletionTrigger.Attribute:
 					IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ?? spine.Nodes.Peek (1) as IAttributedXObject;
-					return await GetAttributeCompletionsAsync (nodePath, attributedOb, GetExistingAttributes (spine, triggerLocation.Snapshot, attributedOb), token);
+					return await GetAttributeCompletionsAsync (triggerLocation, nodePath, attributedOb, GetExistingAttributes (spine, triggerLocation.Snapshot, attributedOb), token);
 
 				case XmlCompletionTrigger.AttributeValue:
 					if (spine.Nodes.Peek () is XAttribute att && spine.Nodes.Peek (1) is IAttributedXObject attributedObject) {
-						return await GetAttributeValueCompletionsAsync (nodePath, attributedObject, att, token);
+						return await GetAttributeValueCompletionsAsync (triggerLocation, nodePath, attributedObject, att, token);
 					}
 					break;
 
 				case XmlCompletionTrigger.Entity:
-					return await GetEntityCompletionsAsync (nodePath, token);
+					return await GetEntityCompletionsAsync (triggerLocation, nodePath, token);
 
 				case XmlCompletionTrigger.DocType:
 				case XmlCompletionTrigger.DocTypeOrCData:
 					// we delegate adding the CDATA completion to the subclass as only it knows whether character data is valid in that position
-					return await GetDocTypeCompletionsAsync (nodePath, triggerResult.kind == XmlCompletionTrigger.DocTypeOrCData, token);
+					return await GetDocTypeCompletionsAsync (triggerLocation, nodePath, triggerResult.kind == XmlCompletionTrigger.DocTypeOrCData, token);
 				}
 			}
 
 			return CompletionContext.Empty;
 		}
 
-		public Task<object> GetDescriptionAsync (IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
+		public Task<object> GetDescriptionAsync (
+			IAsyncCompletionSession session,
+			CompletionItem item,
+			CancellationToken token)
 		{
 			return item.GetDocumentationAsync ();
 		}
@@ -84,11 +92,46 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 			return CompletionStartData.DoesNotParticipateInCompletion;
 		}
 
-		protected virtual Task<CompletionContext> GetElementCompletionsAsync (List<XObject> nodePath, bool includeBracket, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetAttributeCompletionsAsync (List<XObject> nodePath, IAttributedXObject attributedObject, Dictionary<string, string> existingAtts, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetAttributeValueCompletionsAsync (List<XObject> nodePath, IAttributedXObject attributedObject, XAttribute attribute, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetEntityCompletionsAsync (List<XObject> nodePath, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
-		protected virtual Task<CompletionContext> GetDocTypeCompletionsAsync (List<XObject> nodePath, bool includeCData, CancellationToken token) => Task.FromResult (CompletionContext.Empty);
+		protected virtual Task<CompletionContext> GetElementCompletionsAsync (
+			SnapshotPoint triggerLocation,
+			List<XObject> nodePath,
+			bool includeBracket,
+			CancellationToken token
+			)
+			=> Task.FromResult (CompletionContext.Empty);
+
+		protected virtual Task<CompletionContext> GetAttributeCompletionsAsync (
+			SnapshotPoint triggerLocation,
+			List<XObject> nodePath,
+			IAttributedXObject attributedObject,
+			Dictionary<string, string> existingAtts,
+			CancellationToken token
+			)
+			=> Task.FromResult (CompletionContext.Empty);
+
+		protected virtual Task<CompletionContext> GetAttributeValueCompletionsAsync (
+			SnapshotPoint triggerLocation,
+			List<XObject> nodePath,
+			IAttributedXObject attributedObject,
+			XAttribute attribute,
+			CancellationToken token
+			)
+			=> Task.FromResult (CompletionContext.Empty);
+
+		protected virtual Task<CompletionContext> GetEntityCompletionsAsync (
+			SnapshotPoint triggerLocation,
+			List<XObject> nodePath,
+			CancellationToken token
+			)
+			=> Task.FromResult (CompletionContext.Empty);
+
+		protected virtual Task<CompletionContext> GetDocTypeCompletionsAsync (
+			SnapshotPoint triggerLocation,
+			List<XObject> nodePath,
+			bool includeCData,
+			CancellationToken token
+			)
+			=> Task.FromResult (CompletionContext.Empty);
 
 		protected List<XObject> GetNodePath (XmlParser spine, ITextSnapshot snapshot)
 		{
@@ -131,7 +174,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 			}
 
 			if (mid > 0 && end > mid + 1) {
-				return new XName (snapshot.GetText(start, mid - start), snapshot.GetText (mid + 1, end - mid -1));
+				return new XName (snapshot.GetText (start, mid - start), snapshot.GetText (mid + 1, end - mid - 1));
 			}
 			return new XName (snapshot.GetText (start, end - start));
 		}
@@ -139,7 +182,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 		static Dictionary<string, string> GetExistingAttributes (XmlParser spineParser, ITextSnapshot snapshot, IAttributedXObject attributedOb)
 		{
 			// clone parser to avoid modifying state
-			spineParser = (XmlParser) ((ICloneable)spineParser).Clone ();
+			spineParser = (XmlParser)((ICloneable)spineParser).Clone ();
 
 			// parse rest of element to get all attributes
 			for (int i = spineParser.Position; i < snapshot.Length; i++) {
@@ -150,7 +193,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 				case XmlAttributeState _:
 				case XmlAttributeValueState _:
 				case XmlTagState _:
-						continue;
+					continue;
 				case XmlNameState _:
 					if (currentState.Parent is XmlAttributeState) {
 						continue;
