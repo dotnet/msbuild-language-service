@@ -25,18 +25,12 @@
 // THE SOFTWARE.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Core.Serialization;
-using MonoDevelop.Core;
 using System.Text;
 using System.ComponentModel;
-using MonoDevelop.Projects.Policies;
 
 namespace MonoDevelop.Xml.Formatting
 {
-	[PolicyType ("XML formatting")]
 	public class XmlFormattingPolicy : IEquatable<XmlFormattingPolicy>
 	{
 		List<XmlFormattingSettings> formats = new List<XmlFormattingSettings> ();
@@ -45,13 +39,11 @@ namespace MonoDevelop.Xml.Formatting
 		public XmlFormattingPolicy ()
 		{
 		}
-		
-		[ItemProperty]
+
 		public List<XmlFormattingSettings> Formats {
 			get { return formats; }
 		}
-		
-		[ItemProperty]
+
 		public XmlFormattingSettings DefaultFormat {
 			get { return defaultFormat; }
 		}
@@ -154,106 +146,46 @@ namespace MonoDevelop.Xml.Formatting
 			clone.scope = new List<string> (scope);
 			return clone;
 		}
-		
-		[ItemProperty]
-		[System.ComponentModel.Browsable (false)]
+
 		public List<string> ScopeXPath {
 			get { return scope; }
 		}
-		
-		[ItemProperty]
-		[LocalizedCategory ("Document")]
-		[LocalizedDisplayName ("Omit XML declaration")]
+
 		public bool OmitXmlDeclaration { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Document")]
-		[LocalizedDisplayName ("New line chars")]
+
 		[TypeConverter (typeof (CStringsConverter))]
 		public string NewLineChars { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Document")]
-		[LocalizedDisplayName ("Indent content")]
+
 		public bool IndentContent { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Document")]
-		[LocalizedDisplayName ("Indent string")]
-		[TypeConverter (typeof (CStringsConverter))]
-		public string ContentIndentString {
-			get { return ccc; }
-			set { ccc = value; }
-		}
-		string ccc;
-		
-		
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Attributes in new line")]
-		public bool AttributesInNewLine { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Max attributes per line")]
+
+        [TypeConverter(typeof(CStringsConverter))]
+        public string ContentIndentString { get; set; }
+
+        public bool AttributesInNewLine { get; set; }
+
 		public int MaxAttributesPerLine { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Attributes indent string")]
+
 		[TypeConverter (typeof (CStringsConverter))]
 		public string AttributesIndentString { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Wrap attributes")]
+
 		public bool WrapAttributes { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Align attributes")]
+
 		public bool AlignAttributes { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Align attribute values")]
+
 		public bool AlignAttributeValues { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Quote char")]
+
 		public char QuoteChar { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Spaces before assignment")]
+
 		public int SpacesBeforeAssignment { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Attributes")]
-		[LocalizedDisplayName ("Spaces after assignment")]
+
 		public int SpacesAfterAssignment { get; set; }
-		
-		
-		[ItemProperty]
-		[LocalizedCategory ("Elements")]
-		[LocalizedDisplayName ("Empty lines before start")]
+
 		public int EmptyLinesBeforeStart { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Elements")]
-		[LocalizedDisplayName ("Empty lines after start")]
+
 		public int EmptyLinesAfterStart { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Elements")]
-		[LocalizedDisplayName ("Empty lines before end")]
+
 		public int EmptyLinesBeforeEnd { get; set; }
-		
-		[ItemProperty]
-		[LocalizedCategory ("Elements")]
-		[LocalizedDisplayName ("Empty lines after end")]
+
 		public int EmptyLinesAfterEnd { get; set; }
 	}
 

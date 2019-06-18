@@ -34,13 +34,11 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml;
-
-using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Xml.Parser;
 
 namespace MonoDevelop.Xml.Formatting
 {
-	internal class XmlFormatterWriter : XmlWriter
+	public class XmlFormatterWriter : XmlWriter
 	{
 		// Static/constant members.
 
