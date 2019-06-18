@@ -87,7 +87,7 @@ namespace MonoDevelop.Xml.Editor
 			// get the engine caught up
 			var snapshot = buffer.CurrentSnapshot;
 			int nextSave = (cachedEngines.Count == 0) ? BUFFER_SIZE : cachedEngines.Peek ().Position + BUFFER_SIZE;
-			if (Parser.Position + 1 == position) {
+			while (Parser.Position < position) {
 				char ch = snapshot[Parser.Position];
 				Parser.Push (ch);
 				ConsoleWrite ("pushing character '{0}'", ch);
