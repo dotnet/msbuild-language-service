@@ -9,10 +9,12 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 		[OneTimeSetUp]
 		public void InitializeEditorEnvironment ()
 		{
-			TestEnvironment.EnsureInitialized ();
+			(Environment, Catalog) = InitializeEnvironment ();
 		}
 
-		public EditorEnvironment Environment => TestEnvironment.EditorEnvironment;
-		public EditorCatalog Catalog => TestEnvironment.EditorCatalog;
+		protected abstract (EditorEnvironment, EditorCatalog) InitializeEnvironment ();
+
+		public virtual EditorEnvironment Environment { get; private set; }
+		public virtual EditorCatalog Catalog { get; private set; }
 	}
 }

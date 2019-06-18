@@ -66,5 +66,7 @@ namespace MonoDevelop.Xml.Tests.Completion
 			Assert.AreEqual (1, result.Items.Length);
 			Assert.AreEqual ("Hello", result.Items[0].DisplayText);
 		}
+
+		protected override (EditorEnvironment, EditorCatalog) InitializeEnvironment () => TestEnvironment.EnsureInitialized ();
 	}
 }

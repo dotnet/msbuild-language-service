@@ -20,13 +20,13 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 		public static EditorEnvironment EditorEnvironment { get; private set; }
 		public static EditorCatalog EditorCatalog { get; private set; }
 
-		public static void EnsureInitialized()
+		public static (EditorEnvironment, EditorCatalog) EnsureInitialized()
 		{
-			if (initialized) {
-				return;
+			if (!initialized) {
+				initialized = true;
+				Initialize ();
 			}
-			initialized = true;
-			Initialize ();
+			return (EditorEnvironment, EditorCatalog);
 		}
 
 		static void Initialize ()
