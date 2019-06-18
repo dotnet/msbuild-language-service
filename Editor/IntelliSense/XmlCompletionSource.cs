@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
 using MonoDevelop.Xml.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
@@ -17,6 +18,13 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 {
 	public abstract class XmlCompletionSource<TParser, TResult> : IAsyncCompletionSource where TResult : XmlParseResult where TParser : XmlBackgroundParser<TResult>, new()
 	{
+		protected ITextView TextView { get; }
+
+		public XmlCompletionSource (ITextView textView)
+		{
+			TextView = textView;
+		}
+
 		public async Task<CompletionContext> GetCompletionContextAsync (
 			IAsyncCompletionSession session,
 			CompletionTrigger trigger,
@@ -210,5 +218,9 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 			return existingAtts;
 		}
+
+		protected TParser GetParser () => BackgroundParser<TResult>.GetParser<TParser> ((ITextBuffer2)TextView.TextBuffer);
+
+		protected XmlParser GetSpineParser (SnapshotPoint point) => GetParser ().GetSpineParser (point);
 	}
 }

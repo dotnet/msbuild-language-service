@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using Microsoft.VisualStudio.MiniEditor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
@@ -32,7 +33,7 @@ namespace MonoDevelop.Xml.Tests.Completion
 	[ContentType (CompletionTestContentType.Name)]
 	class XmlCompletionTestSourceProvider : IAsyncCompletionSourceProvider
 	{
-		public IAsyncCompletionSource GetOrCreate (ITextView textView) => new XmlCompletionTestSource ();
+		public IAsyncCompletionSource GetOrCreate (ITextView textView) => new XmlCompletionTestSource (textView);
 	}
 
 	class XmlCompletionTestSource : XmlCompletionSource<XmlBackgroundParser,XmlParseResult>
