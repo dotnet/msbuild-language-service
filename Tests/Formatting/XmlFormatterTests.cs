@@ -38,7 +38,7 @@ namespace MonoDevelop.Xml.Tests.Formatting
 		[SetUp]
 		public void Init ()
 		{
-			textPolicy = new TextStylePolicy ();
+			textPolicy = new TextStylePolicy ().WithEolMarker (EolMarker.Unix);
 			xmlPolicy = new XmlFormattingPolicy ();
 		}
 

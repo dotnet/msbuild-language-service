@@ -1,4 +1,4 @@
-﻿//
+//
 // ExpandSelectionTests.cs
 //
 // Author:
