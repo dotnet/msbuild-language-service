@@ -23,17 +23,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Windows.Input;
 
 namespace MonoDevelop.Xml.Completion
 {
-	public interface IXmlSchemaCompletionDataCollection: IEnumerable<XmlSchemaCompletionProvider>
+	interface IXmlSchemaCompletionDataCollection: IEnumerable<XmlSchemaCompletionProvider>
 	{
 		XmlSchemaCompletionProvider this [string namespaceUri] { get; }
-		XmlCompletionData[] GetNamespaceCompletionData ();
+		void GetNamespaceCompletionData (XmlSchemaCompletionBuilder builder);
 		XmlSchemaCompletionProvider GetSchemaFromFileName (string fileName);
 	}
 	
-	public class XmlSchemaCompletionDataCollection : List<XmlSchemaCompletionProvider>, IXmlSchemaCompletionDataCollection
+	class XmlSchemaCompletionDataCollection : List<XmlSchemaCompletionProvider>, IXmlSchemaCompletionDataCollection
 	{
 		public XmlSchemaCompletionProvider this [string namespaceUri] {
 			get {
@@ -44,12 +45,10 @@ namespace MonoDevelop.Xml.Completion
 			}
 		}
 		
-		public XmlCompletionData[] GetNamespaceCompletionData ()
+		public void GetNamespaceCompletionData (XmlSchemaCompletionBuilder builder)
 		{
-			List<XmlCompletionData> completionItems = new List<XmlCompletionData> ();
 			foreach (XmlSchemaCompletionProvider schema in this)
-				completionItems.Add (new XmlCompletionData (schema.NamespaceUri, XmlCompletionData.DataType.NamespaceUri));
-			return completionItems.ToArray ();
+				builder.AddNamespace (schema.NamespaceUri);
 		}
 		
 		public XmlSchemaCompletionProvider GetSchemaFromFileName (string fileName)
@@ -61,7 +60,7 @@ namespace MonoDevelop.Xml.Completion
 		}
 	}
 	
-	public class MergedXmlSchemaCompletionDataCollection : IXmlSchemaCompletionDataCollection
+	class MergedXmlSchemaCompletionDataCollection : IXmlSchemaCompletionDataCollection
 	{
 		XmlSchemaCompletionDataCollection builtin;
 		XmlSchemaCompletionDataCollection user;
@@ -83,16 +82,12 @@ namespace MonoDevelop.Xml.Completion
 			}
 		}
 
-		public XmlCompletionData[] GetNamespaceCompletionData ()
+		public void GetNamespaceCompletionData (XmlSchemaCompletionBuilder builder)
 		{
-			Dictionary <string, XmlCompletionData> items = new Dictionary<string,XmlCompletionData> ();
 			foreach (XmlSchemaCompletionProvider schema in builtin)
-				items[schema.NamespaceUri] = new XmlCompletionData (schema.NamespaceUri, XmlCompletionData.DataType.NamespaceUri);
+				builder.AddNamespace (schema.NamespaceUri);
 			foreach (XmlSchemaCompletionProvider schema in user)
-				items[schema.NamespaceUri] = new XmlCompletionData (schema.NamespaceUri, XmlCompletionData.DataType.NamespaceUri);
-			XmlCompletionData[] result = new XmlCompletionData [items.Count];
-			items.Values.CopyTo (result, 0);
-			return result;
+				builder.AddNamespace (schema.NamespaceUri);
 		}
 
 		public XmlSchemaCompletionProvider GetSchemaFromFileName (string fileName)

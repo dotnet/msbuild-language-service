@@ -1,10 +1,10 @@
-using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Xml;
 using MonoDevelop.Xml.Tests.Utils;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 
 namespace MonoDevelop.Xml.Tests.Schema
 {
@@ -16,7 +16,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	{
 		XmlSchemaCompletionProvider schemaCompletionData;
 		XmlElementPath h1Path;
-		CompletionDataList h1Attributes;
+		CompletionContext h1Attributes;
 		string namespaceURI = "http://www.w3.org/1999/xhtml";
 		
 		async Task Init ()
@@ -24,7 +24,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			if (schemaCompletionData != null)
 				return;
 			
-			XmlTextReader reader = ResourceManager.GetXhtmlStrictSchema();
+			var reader = ResourceManager.GetXhtmlStrictSchema();
 			schemaCompletionData = new XmlSchemaCompletionProvider(reader);
 			
 			// Set up h1 element's path.
@@ -34,14 +34,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 			h1Path.Elements.Add(new QualifiedName("h1", namespaceURI));
 			
 			// Get h1 element info.
-			h1Attributes = await schemaCompletionData.GetAttributeCompletionData(h1Path, CancellationToken.None);
+			h1Attributes = await schemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, h1Path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task H1HasAttributes()
 		{
 			await Init ();
-			Assert.IsTrue(h1Attributes.Count > 0, "Should have at least one attribute.");
+			Assert.IsTrue(h1Attributes.Items.Length > 0, "Should have at least one attribute.");
 		}
 	}
 }

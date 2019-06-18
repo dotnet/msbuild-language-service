@@ -1,4 +1,5 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -12,29 +13,31 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class RestrictionElementTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList childElements;
-		CompletionDataList attributes;
-		CompletionDataList annotationChildElements;
-		CompletionDataList choiceChildElements;
+		CompletionContext childElements;
+		CompletionContext attributes;
+		CompletionContext annotationChildElements;
+		CompletionContext choiceChildElements;
 
 		async Task Init ()
 		{
 			if (childElements != null)
 				return;
 
+			IAsyncCompletionSource source = DummyCompletionSource.Instance;
+
 			XmlElementPath path = new XmlElementPath ();
 			path.Elements.Add (new QualifiedName ("group", "http://www.w3.org/2001/XMLSchema"));
-			childElements = await SchemaCompletionData.GetChildElementCompletionData (path, CancellationToken.None);
-			attributes = await SchemaCompletionData.GetAttributeCompletionData (path, CancellationToken.None);
+			childElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
+			attributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 
 			// Get annotation child elements.
 			path.Elements.Add (new QualifiedName ("annotation", "http://www.w3.org/2001/XMLSchema"));
-			annotationChildElements = await SchemaCompletionData.GetChildElementCompletionData (path, CancellationToken.None);
+			annotationChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 
 			// Get choice child elements.
 			path.Elements.RemoveAt (path.Elements.Count - 1);
 			path.Elements.Add (new QualifiedName ("choice", "http://www.w3.org/2001/XMLSchema"));
-			choiceChildElements = await SchemaCompletionData.GetChildElementCompletionData (path, CancellationToken.None);
+			choiceChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 		}
 
 		[Test]

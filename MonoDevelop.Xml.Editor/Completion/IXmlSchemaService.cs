@@ -1,4 +1,4 @@
-﻿//
+//
 // IXmlSchemaService.cs
 //
 // Author:
@@ -28,7 +28,7 @@ using System;
 
 namespace MonoDevelop.Xml.Completion
 {
-	public interface IXmlSchemaService
+	interface IXmlSchemaService
 	{
 		/// <summary>
 		/// Gets the XML schema matching the filename.

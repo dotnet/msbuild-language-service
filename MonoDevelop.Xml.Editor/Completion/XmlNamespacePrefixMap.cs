@@ -28,7 +28,7 @@ using System.Collections.Generic;
 
 namespace MonoDevelop.Xml.Completion
 {
-	public class XmlNamespacePrefixMap
+	class XmlNamespacePrefixMap
 	{
 		readonly Dictionary<string, string> pfNsMap = new Dictionary<string, string> ();
 		readonly Dictionary<string, string> nsPfMap = new Dictionary<string, string> ();

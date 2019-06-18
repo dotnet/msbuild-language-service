@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,8 +12,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class GroupRefTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList childElements;
-		CompletionDataList paraAttributes;
+		CompletionContext childElements;
+		CompletionContext paraAttributes;
 		
 		async Task Init ()
 		{
@@ -25,17 +25,17 @@ namespace MonoDevelop.Xml.Tests.Schema
 			path.Elements.Add(new QualifiedName("html", "http://foo/xhtml"));
 			path.Elements.Add(new QualifiedName("body", "http://foo/xhtml"));
 			
-			childElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			childElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 			
 			path.Elements.Add(new QualifiedName("p", "http://foo/xhtml"));
-			paraAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			paraAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task BodyHasFourChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(4, childElements.Count, 
+			Assert.AreEqual(4, childElements.Items.Length, 
 			                "Should be 4 child elements.");
 		}
 		

@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class ChildElementAttributesTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList attributes;
+		CompletionContext attributes;
 		
 		async Task Init ()
 		{
@@ -22,14 +22,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 			path.Elements.Add(new QualifiedName("project", "http://nant.sf.net//nant-0.84.xsd"));
 			path.Elements.Add(new QualifiedName("attrib", "http://nant.sf.net//nant-0.84.xsd"));
 			
-			attributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			attributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 
 		[Test]
 		public async Task AttributeCount()
 		{
 			await Init ();
-			Assert.AreEqual(10, attributes.Count, "Should be one attribute.");
+			Assert.AreEqual(10, attributes.Items.Length, "Should be one attribute.");
 		}
 		
 		[Test]

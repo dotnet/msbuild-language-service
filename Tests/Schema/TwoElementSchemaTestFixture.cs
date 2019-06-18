@@ -1,4 +1,3 @@
-using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading.Tasks;
@@ -32,57 +31,48 @@ namespace MonoDevelop.Xml.Tests.Schema
 		[Test]
 		public async Task TextElementHasOneAttribute()
 		{
-			CompletionDataList attributesCompletionData = await SchemaCompletionData.GetAttributeCompletionData(textElementPath, CancellationToken.None);
+			var attributesCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, textElementPath, CancellationToken.None);
 			
-			Assert.AreEqual(1, attributesCompletionData.Count, 
-			                "Should have 1 text attribute.");
+			Assert.AreEqual (1, attributesCompletionData.Items.Length, "Should have 1 text attribute.");
 		}
 		
 		[Test]
 		public async Task TextElementAttributeName()
 		{
-			CompletionDataList attributesCompletionData = await SchemaCompletionData.GetAttributeCompletionData(textElementPath, CancellationToken.None);
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(attributesCompletionData, "foo"),
-			              "Unexpected text attribute name.");
+			var attributesCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, textElementPath, CancellationToken.None);
+			Assert.IsTrue (SchemaTestFixtureBase.Contains(attributesCompletionData, "foo"), "Unexpected text attribute name.");
 		}
 
 		[Test]
 		public async Task NoteElementHasChildElement()
 		{
-			CompletionDataList childElementCompletionData
-				= await SchemaCompletionData.GetChildElementCompletionData(noteElementPath, CancellationToken.None);
+			var childElementCompletionData = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, noteElementPath, CancellationToken.None);
 			
-			Assert.AreEqual(1, childElementCompletionData.Count,
-			                "Should be one child.");
+			Assert.AreEqual(1, childElementCompletionData.Items.Length, "Should be one child.");
 		}
 		
 		[Test]
 		public async Task NoteElementHasNoAttributes()
 		{	
-			CompletionDataList attributeCompletionData
-			= await SchemaCompletionData.GetAttributeCompletionData(noteElementPath, CancellationToken.None);
+			var attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, noteElementPath, CancellationToken.None);
 			
-			Assert.AreEqual(0, attributeCompletionData.Count,
-			                "Should no attributes.");
+			Assert.AreEqual(0, attributeCompletionData.Items.Length, "Should no attributes.");
 		}
 
 		[Test]
 		public async Task OneRootElement()
 		{
-			CompletionDataList elementCompletionData
-				= await SchemaCompletionData.GetElementCompletionData(CancellationToken.None);
+			var elementCompletionData = await SchemaCompletionData.GetElementCompletionDataAsync (DummyCompletionSource.Instance, CancellationToken.None);
 			
-			Assert.AreEqual(1, elementCompletionData.Count, "Should be 1 root element.");
+			Assert.AreEqual(1, elementCompletionData.Items.Length, "Should be 1 root element.");
 		}
 		
 		[Test]
 		public async Task RootElementIsNote()
 		{
-			CompletionDataList elementCompletionData
-				= await SchemaCompletionData.GetElementCompletionData(CancellationToken.None);
+			var elementCompletionData = await SchemaCompletionData.GetElementCompletionDataAsync (DummyCompletionSource.Instance, CancellationToken.None);
 			
-			Assert.IsTrue(Contains(elementCompletionData, "note"), 
-			              "Should be called note.");
+			Assert.IsTrue(Contains(elementCompletionData, "note"), "Should be called note.");
 		}
 		
 		protected override string GetSchema()

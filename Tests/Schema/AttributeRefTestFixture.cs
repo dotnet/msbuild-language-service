@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class AttributeRefTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList attributes;
+		CompletionContext attributes;
 		
 		async Task Init ()
 		{
@@ -20,15 +20,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 				return;
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("html", "http://foo/xhtml"));
-			attributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			attributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task HtmlAttributeCount()
 		{
 			await Init ();
-			Assert.AreEqual(4, attributes.Count, 
-			                "Should be 4 attributes.");
+			Assert.AreEqual(4, attributes.Items.Length, "Should be 4 attributes.");
 		}
 		
 		[Test]

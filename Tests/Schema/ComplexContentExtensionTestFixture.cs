@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,8 +12,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class ComplexContentExtensionTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList bodyChildElements;
-		CompletionDataList bodyAttributes;
+		CompletionContext bodyChildElements;
+		CompletionContext bodyAttributes;
 		
 		async Task Init ()
 		{
@@ -22,8 +22,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("body", "http://www.w3schools.com")); 
 			
-			bodyChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
-			bodyAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			bodyChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
+			bodyAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}	
 		
 		[Test]
@@ -34,7 +34,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			path.Elements.Add(new QualifiedName("body", "http://www.w3schools.com")); 
 			path.Elements.Add(new QualifiedName("title", "http://www.w3schools.com")); 
 
-			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None)).Count,
+			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None)).Items.Length,
 			                "Should be no child elements.");
 		}
 		
@@ -46,7 +46,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			path.Elements.Add(new QualifiedName("body", "http://www.w3schools.com")); 
 			path.Elements.Add(new QualifiedName("text", "http://www.w3schools.com")); 
 
-			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None)).Count,
+			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None)).Items.Length,
 			                "Should be no child elements.");
 		}		
 		
@@ -54,7 +54,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task BodyHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, bodyChildElements.Count, 
+			Assert.AreEqual(2, bodyChildElements.Items.Length, 
 			                "Should be two child elements.");
 		}
 		
@@ -78,7 +78,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task BodyAttributeCount()
 		{
 			await Init ();
-			Assert.AreEqual(1, bodyAttributes.Count, 
+			Assert.AreEqual(1, bodyAttributes.Items.Length, 
 			                "Should be one attribute.");
 		}
 		

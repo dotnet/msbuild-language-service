@@ -26,18 +26,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Completion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Dom;
 
 namespace MonoDevelop.Xml.Completion
 {
-	class InferredXmlCompletionProvider : XmlCompletionProvider
+	class InferredXmlCompletionProvider : IXmlCompletionProvider
 	{
-		Dictionary<string,HashSet<string>> elementCompletions = new Dictionary<string,HashSet<string>> ();
-		Dictionary<string,HashSet<string>> attributeCompletions = new Dictionary<string,HashSet<string>> ();
-		
+		Dictionary<string, HashSet<string>> elementCompletions = new Dictionary<string, HashSet<string>> ();
+		Dictionary<string, HashSet<string>> attributeCompletions = new Dictionary<string, HashSet<string>> ();
+
 		public DateTime TimeStampUtc { get; set; }
 		public int ErrorCount { get; set; }
 
@@ -52,14 +54,14 @@ namespace MonoDevelop.Xml.Completion
 				XElement parentEl = el.Parent as XElement;
 				if (parentEl != null)
 					parentName = parentEl.Name.Name;
-				
+
 				HashSet<string> map;
 				if (!elementCompletions.TryGetValue (parentName, out map)) {
 					map = new HashSet<string> ();
 					elementCompletions.Add (parentName, map);
 				}
 				map.Add (el.Name.Name);
-				
+
 				if (!attributeCompletions.TryGetValue (el.Name.Name, out map)) {
 					map = new HashSet<string> ();
 					attributeCompletions.Add (el.Name.Name, map);
@@ -68,46 +70,63 @@ namespace MonoDevelop.Xml.Completion
 					map.Add (att.Name.Name);
 			}
 		}
-		
-		public override Task GetElementCompletionData (CompletionContext context, XmlElementPath path, CancellationToken token)
-		{
-			return GetCompletions (context, elementCompletions, path, XmlCompletionData.DataType.XmlElement);
-		}
-		
-		public override Task GetAttributeCompletionData (CompletionContext context, XmlElementPath path, CancellationToken token)
-		{
-			return GetCompletions (context, attributeCompletions, path, XmlCompletionData.DataType.XmlAttribute);
-		}
-		
-		public override Task GetAttributeValueCompletionData (CompletionContext context, XmlElementPath path, string name, CancellationToken token)
-		{
-			return Task.CompletedTask;
-		}
-		
-		static Task GetCompletions (CompletionContext context, Dictionary<string,HashSet<string>> map, XmlElementPath path, XmlCompletionData.DataType type)
-		{
-			if (path == null || path.Elements.Count == 0) {
-				return Task.CompletedTask;
-			}
 
-			var tagName = path.Elements [path.Elements.Count - 1].Name;
+		public Task<CompletionContext> GetElementCompletionDataAsync (IAsyncCompletionSource source, CancellationToken token)
+		{
+			return GetChildElementCompletionDataAsync (source, "", token);
+		}
 
+		public Task<CompletionContext> GetElementCompletionDataAsync (IAsyncCompletionSource source, string namespacePrefix, CancellationToken token)
+		{
+			return Task.FromResult (CompletionContext.Empty);
+		}
+
+		public Task<CompletionContext> GetChildElementCompletionDataAsync (IAsyncCompletionSource source, XmlElementPath path, CancellationToken token)
+		{
+			return GetCompletions (source, elementCompletions, path);
+		}
+
+		public Task<CompletionContext> GetAttributeCompletionDataAsync (IAsyncCompletionSource source, XmlElementPath path, CancellationToken token)
+		{
+			return GetCompletions (source, attributeCompletions, path);
+		}
+
+		public Task<CompletionContext> GetAttributeValueCompletionDataAsync (IAsyncCompletionSource source, XmlElementPath path, string name, CancellationToken token)
+		{
+			return Task.FromResult (CompletionContext.Empty);
+		}
+
+		public Task<CompletionContext> GetChildElementCompletionDataAsync (IAsyncCompletionSource source, string tagName, CancellationToken token)
+		{
+			return GetCompletions (source, elementCompletions, tagName);
+		}
+
+		public Task<CompletionContext> GetAttributeCompletionDataAsync (IAsyncCompletionSource source, string tagName, CancellationToken token)
+		{
+			return GetCompletions (source, attributeCompletions, tagName);
+		}
+
+		public Task<CompletionContext> GetAttributeValueCompletionDataAsync (IAsyncCompletionSource source, string tagName, string name, CancellationToken token)
+		{
+			return Task.FromResult (CompletionContext.Empty);
+		}
+
+		static Task<CompletionContext> GetCompletions (IAsyncCompletionSource source, Dictionary<string, HashSet<string>> map, string tagName)
+		{
+			var items = ImmutableArray<CompletionItem>.Empty;
 			HashSet<string> values;
-			if (map.TryGetValue (tagName, out values)) {
-				foreach (string s in values) {
-					context.AddItem (XmlCompletionDataHelper.Create (s, type));
-				}
-			}
-			return Task.CompletedTask;
+			if (map.TryGetValue (tagName, out values))
+				foreach (string s in values)
+					items = items.Add (new CompletionItem (s, source));
+			var context = new CompletionContext (items, null, InitialSelectionHint.SoftSelection);
+			return Task.FromResult (context);
 		}
-	}
 
-	public static class XmlCompletionDataHelper
-	{
-		public static CompletionItem Create (string name, XmlCompletionData.DataType type)
+		static Task<CompletionContext> GetCompletions (IAsyncCompletionSource source, Dictionary<string, HashSet<string>> map, XmlElementPath path)
 		{
-			//TODO: icon
-			return CompletionItem.Create (name);
+			if (path == null || path.Elements.Count == 0)
+				return Task.FromResult (CompletionContext.Empty);
+			return GetCompletions (source, map, path.Elements[path.Elements.Count - 1].Name);
 		}
 	}
 }

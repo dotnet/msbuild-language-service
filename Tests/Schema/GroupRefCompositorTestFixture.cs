@@ -1,4 +1,4 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -16,8 +16,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class GroupRefAsCompositorTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList rootChildElements;
-		CompletionDataList fooAttributes;
+		CompletionContext rootChildElements;
+		CompletionContext fooAttributes;
 		
 		async Task Init ()
 		{
@@ -27,43 +27,39 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("root", "http://foo"));
 			
-			rootChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			rootChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		
 			path.Elements.Add(new QualifiedName("foo", "http://foo"));
 			
-			fooAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			fooAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 				
 		[Test]
 		public async Task RootHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, rootChildElements.Count, 
-			                "Should be two child elements.");
+			Assert.AreEqual(2, rootChildElements.Items.Length, "Should be two child elements.");
 		}
 		
 		[Test]
 		public async Task RootChildElementIsFoo()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(rootChildElements, "foo"), 
-			              "Should have a child element called foo.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(rootChildElements, "foo"),  "Should have a child element called foo.");
 		}
 		
 		[Test]
 		public async Task RootChildElementIsBar()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(rootChildElements, "bar"), 
-			              "Should have a child element called bar.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(rootChildElements, "bar"), "Should have a child element called bar.");
 		}		
 		
 		[Test]
 		public async Task FooElementHasIdAttribute()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(fooAttributes, "id"),
-			              "Should have an attribute called id.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(fooAttributes, "id"), "Should have an attribute called id.");
 		}
 		
 		protected override string GetSchema()

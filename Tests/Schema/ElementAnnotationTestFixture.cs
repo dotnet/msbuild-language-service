@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,34 +13,34 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class ElementAnnotationTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList fooChildElementCompletionData;
-		CompletionDataList rootElementCompletionData;
+		CompletionContext fooChildElementCompletionData;
+		CompletionContext rootElementCompletionData;
 		
 		async Task Init ()
 		{
 			if (rootElementCompletionData != null)
 				return;
 			
-			rootElementCompletionData = await SchemaCompletionData.GetElementCompletionData(CancellationToken.None);
+			rootElementCompletionData = await SchemaCompletionData.GetElementCompletionDataAsync (DummyCompletionSource.Instance, CancellationToken.None);
 			
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://foo.com"));
 			
-			fooChildElementCompletionData = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			fooChildElementCompletionData = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 				
 		[Test]
 		public async Task RootElementDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for foo element.", ((MonoDevelop.Ide.CodeCompletion.CompletionData)rootElementCompletionData[0]).Description);
+			Assert.AreEqual("Documentation for foo element.", await rootElementCompletionData.Items[0].GetDocumentationAsync ());
 		}
 		
 		[Test]
 		public async Task FooChildElementDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for bar element.", ((MonoDevelop.Ide.CodeCompletion.CompletionData)fooChildElementCompletionData[0]).Description);
+			Assert.AreEqual("Documentation for bar element.", await fooChildElementCompletionData.Items[0].GetDocumentationAsync ());
 		}
 		
 		protected override string GetSchema()

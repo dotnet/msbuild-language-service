@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,8 +13,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class SingleElementSchemaTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList childElementCompletionData;
-		CompletionDataList attributeCompletionData;
+		CompletionContext childElementCompletionData;
+		CompletionContext attributeCompletionData;
 		
 		async Task Init ()
 		{
@@ -25,35 +25,31 @@ namespace MonoDevelop.Xml.Tests.Schema
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 
 			attributeCompletionData = 
-				await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+				await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 
 			childElementCompletionData = 
-				await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+				await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task NamespaceUri()
 		{
 			await Init ();
-			Assert.AreEqual("http://www.w3schools.com", 
-			                SchemaCompletionData.NamespaceUri,
-			                "Unexpected namespace.");
+			Assert.AreEqual("http://www.w3schools.com", SchemaCompletionData.NamespaceUri, "Unexpected namespace.");
 		}
 		
 		[Test]
 		public async Task NoteElementHasNoAttributes()
 		{
 			await Init ();
-			Assert.AreEqual(0, attributeCompletionData.Count, 
-			                "Not expecting any attributes.");
+			Assert.AreEqual(0, attributeCompletionData.Items.Length, "Not expecting any attributes.");
 		}
 		
 		[Test]
 		public async Task NoteElementHasNoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(0, childElementCompletionData.Count, "" +
-			                "Not expecting any child elements.");
+			Assert.AreEqual(0, childElementCompletionData.Items.Length, "Not expecting any child elements.");
 		}
 		
 		protected override string GetSchema()

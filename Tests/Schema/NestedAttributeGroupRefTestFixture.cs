@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class NestedAttributeGroupRefTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList attributeCompletionData;
+		CompletionContext attributeCompletionData;
 		
 		async Task Init ()
 		{
@@ -20,14 +20,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 				return;
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
-			attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task AttributeCount()
 		{
 			await Init ();
-			Assert.AreEqual(7, attributeCompletionData.Count, "Should be 7 attributes.");
+			Assert.AreEqual(7, attributeCompletionData.Items.Length, "Should be 7 attributes.");
 		}
 		
 		[Test]

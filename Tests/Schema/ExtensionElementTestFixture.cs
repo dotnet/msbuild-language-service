@@ -1,4 +1,5 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -12,13 +13,13 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class ExtensionElementTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList schemaChildElements;
-		CompletionDataList annotationChildElements;
-		CompletionDataList annotationAttributes;
-		CompletionDataList includeAttributes;
-		CompletionDataList appInfoAttributes;
+		CompletionContext schemaChildElements;
+		CompletionContext annotationChildElements;
+		CompletionContext annotationAttributes;
+		CompletionContext includeAttributes;
+		CompletionContext appInfoAttributes;
 		//CompletionDataList schemaAttributes;
-		CompletionDataList fooAttributes;
+		CompletionContext fooAttributes;
 		
 		async Task Init ()
 		{
@@ -27,37 +28,37 @@ namespace MonoDevelop.Xml.Tests.Schema
 			
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("schema", "http://www.w3.org/2001/XMLSchema"));
+			IAsyncCompletionSource source = DummyCompletionSource.Instance;
 			
-			schemaChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			schemaChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 			//schemaAttributes = SchemaCompletionData.GetAttributeCompletionData(path);
 			
 			// Get include elements attributes.
 			path.Elements.Add(new QualifiedName("include", "http://www.w3.org/2001/XMLSchema"));
-			includeAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			includeAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 		
 			// Get annotation element info.
 			path.Elements.RemoveAt(path.Elements.Count - 1);
 			path.Elements.Add(new QualifiedName("annotation", "http://www.w3.org/2001/XMLSchema"));
 			
-			annotationChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
-			annotationAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			annotationChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
+			annotationAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 		
 			// Get app info attributes.
 			path.Elements.Add(new QualifiedName("appinfo", "http://www.w3.org/2001/XMLSchema"));
-			appInfoAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			appInfoAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 			
 			// Get foo attributes.
 			path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://www.w3.org/2001/XMLSchema"));
-			fooAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			fooAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task SchemaHasSevenChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(7, schemaChildElements.Count, 
-			                "Should be 7 child elements.");
+			Assert.AreEqual(7, schemaChildElements.Items.Length, "Should be 7 child elements.");
 		}
 		
 		[Test]
@@ -99,7 +100,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task AnnotationElementHasOneAttribute()
 		{
 			await Init ();
-			Assert.AreEqual(1, annotationAttributes.Count, "Should be one attribute.");
+			Assert.AreEqual(1, annotationAttributes.Items.Length, "Should be one attribute.");
 		}
 		
 		[Test]
@@ -114,7 +115,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task AnnotationHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, annotationChildElements.Count, 
+			Assert.AreEqual(2, annotationChildElements.Items.Length, 
 			                "Should be 2 child elements.");
 		}
 		
@@ -138,7 +139,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task IncludeElementHasOneAttribute()
 		{
 			await Init ();
-			Assert.AreEqual(1, includeAttributes.Count, "Should be one attribute.");
+			Assert.AreEqual(1, includeAttributes.Items.Length, "Should be one attribute.");
 		}
 		
 		[Test]
@@ -153,7 +154,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task AppInfoElementHasOneAttribute()
 		{
 			await Init ();
-			Assert.AreEqual(1, appInfoAttributes.Count, "Should be one attribute.");
+			Assert.AreEqual(1, appInfoAttributes.Items.Length, "Should be one attribute.");
 		}
 		
 		[Test]

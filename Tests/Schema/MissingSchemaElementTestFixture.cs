@@ -1,4 +1,5 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -9,7 +10,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class MissingSchemaElementTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList barElementAttributes;
+		CompletionContext barElementAttributes;
 		
 		async Task Init ()
 		{
@@ -18,14 +19,15 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("root", "http://foo"));
 			path.Elements.Add(new QualifiedName("bar", "http://foo"));
-			barElementAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			IAsyncCompletionSource source = DummyCompletionSource.Instance;
+			barElementAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task BarHasOneAttribute()
 		{
 			await Init ();
-			Assert.AreEqual(1, barElementAttributes.Count, "Should have 1 attribute.");
+			Assert.AreEqual(1, barElementAttributes.Items.Length, "Should have 1 attribute.");
 		}
 		
 		protected override string GetSchema()

@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,7 +13,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class NestedSequenceSchemaTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList noteChildElements;
+		CompletionContext noteChildElements;
 		
 		async Task Init ()
 		{
@@ -22,7 +22,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
-			noteChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			noteChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]
@@ -32,7 +32,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 			path.Elements.Add(new QualifiedName("title", "http://www.w3schools.com"));
-			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None)).Count,
+			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None)).Items.Length,
 			                "Should be no child elements.");
 		}
 		
@@ -43,7 +43,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 			path.Elements.Add(new QualifiedName("text", "http://www.w3schools.com"));
-			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None)).Count, 
+			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None)).Items.Length, 
 			                "Should be no child elements.");
 		}		
 		
@@ -51,24 +51,21 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task NoteHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, noteChildElements.Count, 
-			                "Should be two child elements.");
+			Assert.AreEqual(2, noteChildElements.Items.Length, "Should be two child elements.");
 		}
 		
 		[Test]
 		public async Task NoteChildElementIsText()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(noteChildElements, "text"), 
-			              "Should have a child element called text.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(noteChildElements, "text"), "Should have a child element called text.");
 		}
 		
 		[Test]
 		public async Task NoteChildElementIsTitle()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(noteChildElements, "title"), 
-			              "Should have a child element called title.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(noteChildElements, "title"), "Should have a child element called title.");
 		}		
 		
 		protected override string GetSchema()

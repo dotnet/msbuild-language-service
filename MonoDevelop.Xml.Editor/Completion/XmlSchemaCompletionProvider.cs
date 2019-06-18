@@ -28,13 +28,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Schema;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using MonoDevelop.Xml.Editor.IntelliSense;
 
 namespace MonoDevelop.Xml.Completion
 {
 	/// <summary>
 	/// Holds the completion (intellisense) data for an xml schema.
 	/// </summary>
-	public class XmlSchemaCompletionProvider : XmlCompletionProvider
+	class XmlSchemaCompletionProvider : IXmlCompletionProvider
 	{
 		string namespaceUri = String.Empty;
 		XmlSchema schema = null;
@@ -42,45 +45,35 @@ namespace MonoDevelop.Xml.Completion
 		string baseUri = string.Empty;
 		bool readOnly = false;
 		bool loaded = false;
-		
+
 		/// <summary>
 		/// Stores attributes that have been prohibited whilst the code
 		/// generates the attribute completion data.
 		/// </summary>
-		XmlSchemaObjectCollection prohibitedAttributes = new XmlSchemaObjectCollection();
-		
+		XmlSchemaObjectCollection prohibitedAttributes = new XmlSchemaObjectCollection ();
+
 		#region Constructors
-		
-		public XmlSchemaCompletionProvider()
+
+		public XmlSchemaCompletionProvider ()
 		{
 		}
-		
+
 		/// <summary>
 		/// Creates completion data from the schema passed in 
 		/// via the reader object.
 		/// </summary>
-		public XmlSchemaCompletionProvider(TextReader reader)
+		public XmlSchemaCompletionProvider (TextReader reader)
 		{
-			ReadSchema(String.Empty, reader);
+			ReadSchema (String.Empty, reader);
 		}
-		
-		/// <summary>
-		/// Creates completion data from the schema passed in 
-		/// via the reader object.
-		/// </summary>
-		public XmlSchemaCompletionProvider(XmlTextReader reader)
-		{
-			reader.XmlResolver = null;
-			ReadSchema(reader);
-		}
-		
+
 		/// <summary>
 		/// Creates the completion data from the specified schema file.
 		/// </summary>
 		public XmlSchemaCompletionProvider (string fileName) : this (String.Empty, fileName)
 		{
 		}
-		
+
 		/// <summary>
 		/// Creates the completion data from the specified schema file and uses
 		/// the specified baseUri to resolve any referenced schemas.
@@ -88,59 +81,57 @@ namespace MonoDevelop.Xml.Completion
 		public XmlSchemaCompletionProvider (string baseUri, string fileName) : this (baseUri, fileName, false)
 		{
 		}
-		
+
 		//lazyLoadFile should not be used when the namespace property needs to be read
 		public XmlSchemaCompletionProvider (string baseUri, string fileName, bool lazyLoadFile)
 		{
 			this.fileName = fileName;
 			this.baseUri = baseUri;
-			
+
 			if (!lazyLoadFile)
-				using (StreamReader reader = new StreamReader (fileName, true))
+				using (var reader = new StreamReader (fileName, true))
 					ReadSchema (baseUri, reader);
 		}
-		
+
 		#endregion
-		
+
 		#region Properties
-		
+
 		public XmlSchema Schema {
 			get {
 				EnsureLoaded ();
 				return schema;
 			}
 		}
-		
+
 		public bool ReadOnly {
 			get { return readOnly; }
 			set { readOnly = value; }
 		}
-		
+
 		public string FileName {
 			get { return fileName; }
 			set { fileName = value; }
 		}
-		
+
 		public string NamespaceUri {
 			get { return namespaceUri; }
 		}
-		
+
 		#endregion
-		
+
 		/// <summary>
 		/// Converts the filename into a valid Uri.
 		/// </summary>
-		public static string GetUri(string fileName)
+		public static string GetUri (string fileName)
 		{
-			string uri = String.Empty;
-			
-			if (fileName != null) {
-				if (fileName.Length > 0) {
-					uri = String.Concat("file:///", fileName.Replace('\\', '/'));
-				}
-			}
-			
-			return uri;
+			return string.IsNullOrEmpty (fileName) ? "" : new Uri (fileName).AbsoluteUri;
+		}
+
+		#region ILazilyLoadedProvider implementation
+
+		public bool IsLoaded {
+			get { return loaded; }
 		}
 
 		public void EnsureLoaded ()
@@ -151,84 +142,151 @@ namespace MonoDevelop.Xml.Completion
 		public Task EnsureLoadedAsync ()
 		{
 			if (loaded)
-				return Task.FromResult (0);
+				return Task.CompletedTask;
 
 			return Task.Run (() => {
 				if (schema == null)
-					using (StreamReader reader = new StreamReader (fileName, true))
+					using (var reader = new StreamReader (fileName, true))
 						ReadSchema (baseUri, reader);
 
 				//TODO: should we evaluate unresolved imports against other registered schemas?
 				//will be messy because we'll have to re-evaluate if any schema is added, removed or changes
 				//maybe we should just force users to use schemaLocation in their includes
-				var sset = new XmlSchemaSet ();
-				sset.XmlResolver = new LocalOnlyXmlResolver ();
+				var sset = new XmlSchemaSet {
+					XmlResolver = new LocalOnlyXmlResolver ()
+				};
 				sset.Add (schema);
 				sset.ValidationEventHandler += SchemaValidation;
 				sset.Compile ();
 				loaded = true;
 			});
 		}
-		
+		#endregion
+
+		#region Simplified API, useful for e.g. HTML
+
+		public async Task<CompletionContext> GetChildElementCompletionDataAsync (IAsyncCompletionSource source, string tagName, CancellationToken token)
+		{
+			await EnsureLoadedAsync ();
+
+			var list = new XmlSchemaCompletionBuilder (source);
+			var element = FindElement (tagName);
+			if (element != null)
+				GetChildElementCompletionData (list, element, "");
+			return new CompletionContext (list.GetItems ());
+		}
+
+		public async Task<CompletionContext> GetAttributeCompletionDataAsync (IAsyncCompletionSource source, string tagName, CancellationToken token)
+		{
+			await EnsureLoadedAsync ();
+
+			var list = new XmlSchemaCompletionBuilder (source);
+			var element = FindElement (tagName);
+			if (element != null) {
+				prohibitedAttributes.Clear ();
+				GetAttributeCompletionData (list, element);
+			}
+			return new CompletionContext (list.GetItems ());
+		}
+
+		public async Task<CompletionContext> GetAttributeValueCompletionDataAsync (IAsyncCompletionSource source, string tagName, string name, CancellationToken token)
+		{
+			await EnsureLoadedAsync ();
+
+			var list = new XmlSchemaCompletionBuilder (source);
+			var element = FindElement (tagName);
+			if (element != null)
+				GetAttributeValueCompletionData (list, element, name);
+			return new CompletionContext (list.GetItems ());
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Gets the possible root elements for an xml document using this schema.
+		/// </summary>
+		public Task<CompletionContext> GetElementCompletionDataAsync (IAsyncCompletionSource source, CancellationToken token)
+		{
+			return GetElementCompletionDataAsync (source, "", token);
+		}
+
+		/// <summary>
+		/// Gets the possible root elements for an xml document using this schema.
+		/// </summary>
+		public async Task<CompletionContext> GetElementCompletionDataAsync (IAsyncCompletionSource source, string namespacePrefix, CancellationToken token)
+		{
+			await EnsureLoadedAsync ();
+
+			var builder = new XmlSchemaCompletionBuilder (source);
+			foreach (XmlSchemaElement element in schema.Elements.Values) {
+				if (element.Name != null) {
+					builder.AddElement (element.Name, namespacePrefix, element.Annotation);
+				} else {
+					// Do not add reference element.
+				}
+			}
+			return new CompletionContext (builder.GetItems ());
+		}
+
 		/// <summary>
 		/// Gets the attribute completion data for the xml element that exists
 		/// at the end of the specified path.
 		/// </summary>
-		public async override Task<CompletionDataList> GetAttributeCompletionData (XmlElementPath path, CancellationToken token)
+		public async Task<CompletionContext> GetAttributeCompletionDataAsync (IAsyncCompletionSource source, XmlElementPath path, CancellationToken token)
 		{
 			await EnsureLoadedAsync ();
-			
-			var data = new XmlCompletionDataList (path.Namespaces);
+
+			var builder = new XmlSchemaCompletionBuilder (source, path.Namespaces);
 			var element = FindElement (path);
 			if (element != null) {
 				prohibitedAttributes.Clear ();
-				GetAttributeCompletionData (data, element);
+				GetAttributeCompletionData (builder, element);
 			}
-			return data;
+			return new CompletionContext (builder.GetItems ());
 		}
-		
+
 		/// <summary>
 		/// Gets the child element completion data for the xml element that exists
 		/// at the end of the specified path.
 		/// </summary>
-		public async override Task<CompletionDataList> GetChildElementCompletionData (XmlElementPath path, CancellationToken token)
+		public async Task<CompletionContext> GetChildElementCompletionDataAsync (IAsyncCompletionSource source, XmlElementPath path, CancellationToken token)
 		{
 			await EnsureLoadedAsync ();
-			
-			var data = new XmlCompletionDataList (path.Namespaces);
+
+			var builder = new XmlSchemaCompletionBuilder (source, path.Namespaces);
 			var element = FindElement (path);
 			if (element != null) {
 				var last = path.Elements.LastOrDefault ();
-				GetChildElementCompletionData (data, element, last != null ? last.Prefix : "");
+				GetChildElementCompletionData (builder, element, last != null ? last.Prefix : "");
 			}
-			return data;
-		}		
-		
+			return new CompletionContext (builder.GetItems ());
+		}
+
 		/// <summary>
 		/// Gets the autocomplete data for the specified attribute value.
 		/// </summary>
-		public async override Task<CompletionDataList> GetAttributeValueCompletionData (XmlElementPath path, string name, CancellationToken token)
+		public async Task<CompletionContext> GetAttributeValueCompletionDataAsync (IAsyncCompletionSource source, XmlElementPath path, string name, CancellationToken token)
 		{
 			await EnsureLoadedAsync ();
-			
-			var data = new XmlCompletionDataList (path.Namespaces);
+
+			var builder = new XmlSchemaCompletionBuilder (source, path.Namespaces);
 			var element = FindElement (path);
 			if (element != null)
-				GetAttributeValueCompletionData (data, element, name);
-			return data;
+				GetAttributeValueCompletionData (builder, element, name);
+			return new CompletionContext (builder.GetItems ());
 		}
-		
- 		/// <summary>
+
+		/// <summary>
 		/// Finds the element that exists at the specified path.
 		/// </summary>
 		/// <remarks>This method is not used when generating completion data,
 		/// but is a useful method when locating an element so we can jump
 		/// to its schema definition.</remarks>
 		/// <returns><see langword="null"/> if no element can be found.</returns>
-		public async Task<XmlSchemaElement> FindElement (XmlElementPath path)
+		public XmlSchemaElement FindElement (XmlElementPath path)
 		{
-			await EnsureLoadedAsync ();
-			
+			EnsureLoaded ();
+
 			XmlSchemaElement element = null;
 			for (int i = 0; i < path.Elements.Count; ++i) {
 				QualifiedName name = path.Elements[i];
@@ -247,7 +305,7 @@ namespace MonoDevelop.Xml.Completion
 			}
 			return element;
 		}
-		
+
 		/// <summary>
 		/// Finds an element in the schema.
 		/// </summary>
@@ -256,31 +314,31 @@ namespace MonoDevelop.Xml.Completion
 		/// root of the schema so it will not find any elements
 		/// that are defined inside any complex types.
 		/// </remarks>
-		public async Task<XmlSchemaElement> FindElement (QualifiedName name)
+		public XmlSchemaElement FindElement (QualifiedName name)
 		{
-			await EnsureLoadedAsync();
+			EnsureLoaded ();
 
 			foreach (XmlSchemaElement element in schema.Elements.Values) {
 				if (name.Equals (element.QualifiedName)) {
 					return element;
 				}
 			}
-			MonoDevelop.Core.LoggingService.LogDebug ("XmlSchemaDataObject did not find element '{0}' in the schema", name.Name);
+			LoggingService.LogDebug ("XmlSchemaDataObject did not find element '{0}' in the schema", name.Name);
 			return null;
 		}
-		
+
 		public XmlSchemaElement FindElement (string name)
 		{
-			EnsureLoaded();
+			EnsureLoaded ();
 
 			foreach (XmlSchemaElement element in schema.Elements.Values)
 				if (element.QualifiedName.Name == name)
 					return element;
-			
-			MonoDevelop.Core.LoggingService.LogDebug ("XmlSchemaDataObject did not find element '{0}' in the schema", name);
+
+			LoggingService.LogDebug ("XmlSchemaDataObject did not find element '{0}' in the schema", name);
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Finds the complex type with the specified name.
 		/// </summary>
@@ -291,7 +349,7 @@ namespace MonoDevelop.Xml.Completion
 			var qualifiedName = new XmlQualifiedName (name.Name, name.Namespace);
 			return FindNamedType (schema, qualifiedName);
 		}
-		
+
 		/// <summary>
 		/// Finds the specified attribute name given the element.
 		/// </summary>
@@ -304,13 +362,13 @@ namespace MonoDevelop.Xml.Completion
 			EnsureLoaded ();
 
 			XmlSchemaAttribute attribute = null;
-			var complexType = GetElementAsComplexType(element);
+			var complexType = GetElementAsComplexType (element);
 			if (complexType != null) {
-				attribute = FindAttribute(complexType, name);
+				attribute = FindAttribute (complexType, name);
 			}
 			return attribute;
 		}
-		
+
 		/// <summary>
 		/// Finds the attribute group with the specified name.
 		/// </summary>
@@ -319,17 +377,17 @@ namespace MonoDevelop.Xml.Completion
 			EnsureLoaded ();
 			return FindAttributeGroup (schema, name);
 		}
-		
+
 		/// <summary>
 		/// Finds the simple type with the specified name.
 		/// </summary>
-		public XmlSchemaSimpleType FindSimpleType(string name)
+		public XmlSchemaSimpleType FindSimpleType (string name)
 		{
 			EnsureLoaded ();
 			var qualifiedName = new XmlQualifiedName (name, namespaceUri);
 			return FindSimpleType (qualifiedName);
 		}
-		
+
 		/// <summary>
 		/// Finds the specified attribute in the schema. This method only checks
 		/// the attributes defined in the root of the schema.
@@ -342,23 +400,23 @@ namespace MonoDevelop.Xml.Completion
 					return attribute;
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Finds the schema group with the specified name.
 		/// </summary>
-		public XmlSchemaGroup FindGroup(string name)
+		public XmlSchemaGroup FindGroup (string name)
 		{
-			EnsureLoaded();
+			EnsureLoaded ();
 			if (name != null) {
 				foreach (XmlSchemaObject schemaObject in schema.Groups.Values) {
 					var group = schemaObject as XmlSchemaGroup;
 					if (group != null && group.Name == name)
-							return group;
+						return group;
 				}
 			}
 			return null;
-		}	
-		
+		}
+
 		/// <summary>
 		/// Takes the name and creates a qualified name using the namespace of this
 		/// schema.
@@ -380,45 +438,52 @@ namespace MonoDevelop.Xml.Completion
 					}
 				}
 			}
-			
+
 			// Default behaviour just return the name with the namespace uri.
 			return new QualifiedName (name, namespaceUri);
-		}		
+		}
 
 		/// <summary>
 		/// Handler for schema validation errors.
 		/// </summary>
 		void SchemaValidation (object source, ValidationEventArgs e)
 		{
-			MonoDevelop.Core.LoggingService.LogWarning ("Validation error loading schema '{0}': {1}", this.fileName, e.Message);
+			LoggingService.LogWarning ("Validation error loading schema '{0}': {1}", this.fileName, e.Message);
 		}
-		
+
 		/// <summary>
 		/// Loads the schema.
 		/// </summary>
 		void ReadSchema (XmlReader reader)
 		{
 			try {
-				schema = XmlSchema.Read (reader, new ValidationEventHandler(SchemaValidation));			
+				schema = XmlSchema.Read (reader, SchemaValidation);
 				namespaceUri = schema.TargetNamespace;
 			} finally {
 				reader.Close ();
 			}
 		}
-		
+
 		void ReadSchema (string baseUri, TextReader reader)
 		{
-			XmlTextReader xmlReader = new XmlTextReader(baseUri, reader);
-			
-			// The default resolve can cause exceptions loading 
+			// The default resolve can cause exceptions loading
 			// xhtml1-strict.xsd because of the referenced dtds. It also has the
 			// possibility of blocking on referenced remote URIs.
 			// Instead we only resolve local xsds.
-			xmlReader.XmlResolver = new LocalOnlyXmlResolver ();
+
+			var xmlReader = XmlReader.Create (
+				reader,
+				new XmlReaderSettings {
+					XmlResolver = new LocalOnlyXmlResolver (),
+					DtdProcessing = DtdProcessing.Ignore,
+					ValidationType = ValidationType.None
+				},
+				baseUri
+			);
 			ReadSchema (xmlReader);
-		}			
-			
-			
+		}
+
+
 		/// <summary>
 		/// Finds an element in the schema.
 		/// </summary>
@@ -431,31 +496,29 @@ namespace MonoDevelop.Xml.Completion
 		{
 			XmlSchemaElement matchedElement = null;
 			foreach (XmlSchemaElement element in schema.Elements.Values) {
-				if (name.Equals(element.QualifiedName)) {
+				if (name.Equals (element.QualifiedName)) {
 					matchedElement = element;
 					break;
 				}
 			}
-			
+
 			return matchedElement;
-		}		
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaElement element, string prefix)
+		}
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaElement element, string prefix)
 		{
 			var complexType = GetElementAsComplexType (element);
 			if (complexType != null)
 				GetChildElementCompletionData (data, complexType, prefix);
 		}
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaComplexType complexType, string prefix)
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexType complexType, string prefix)
 		{
-			var sequence = complexType.Particle as XmlSchemaSequence;
-			if (sequence != null) {
+			if (complexType.Particle is XmlSchemaSequence sequence) {
 				GetChildElementCompletionData (data, sequence.Items, prefix);
 				return;
 			}
-			var choice = complexType.Particle as XmlSchemaChoice;
-			if (choice != null) {
+			if (complexType.Particle is XmlSchemaChoice choice) {
 				GetChildElementCompletionData (data, choice.Items, prefix);
 				return;
 			}
@@ -475,8 +538,8 @@ namespace MonoDevelop.Xml.Completion
 				return;
 			}
 		}
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaObjectCollection items, string prefix)
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaObjectCollection items, string prefix)
 		{
 			foreach (XmlSchemaObject schemaObject in items) {
 				var childElement = schemaObject as XmlSchemaElement;
@@ -492,7 +555,7 @@ namespace MonoDevelop.Xml.Completion
 								data.AddElement (name, prefix, element.Annotation);
 							}
 						} else {
-							data.AddElement (name, prefix, childElement.Annotation);						
+							data.AddElement (name, prefix, childElement.Annotation);
 						}
 					} else {
 						data.AddElement (name, prefix, childElement.Annotation);
@@ -516,8 +579,8 @@ namespace MonoDevelop.Xml.Completion
 				}
 			}
 		}
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaComplexContent complexContent, string prefix)
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexContent complexContent, string prefix)
 		{
 			var extension = complexContent.Content as XmlSchemaComplexContentExtension;
 			if (extension != null) {
@@ -530,16 +593,16 @@ namespace MonoDevelop.Xml.Completion
 				return;
 			}
 		}
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaComplexContentExtension extension, string prefix)
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexContentExtension extension, string prefix)
 		{
 			var complexType = FindNamedType (schema, extension.BaseTypeName);
 			if (complexType != null)
 				GetChildElementCompletionData (data, complexType, prefix);
-			
+
 			if (extension.Particle == null)
 				return;
-			
+
 			var sequence = extension.Particle as XmlSchemaSequence;
 			if (sequence != null) {
 				GetChildElementCompletionData (data, sequence.Items, prefix);
@@ -555,9 +618,9 @@ namespace MonoDevelop.Xml.Completion
 				GetChildElementCompletionData (data, groupRef, prefix);
 				return;
 			}
-		}		
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaGroupRef groupRef, string prefix)
+		}
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaGroupRef groupRef, string prefix)
 		{
 			var group = FindGroup (groupRef.RefName.Name);
 			if (group == null)
@@ -572,9 +635,9 @@ namespace MonoDevelop.Xml.Completion
 				GetChildElementCompletionData (data, choice.Items, prefix);
 				return;
 			}
-		}		
-		
-		void GetChildElementCompletionData (XmlCompletionDataList data, XmlSchemaComplexContentRestriction restriction, string prefix)
+		}
+
+		void GetChildElementCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexContentRestriction restriction, string prefix)
 		{
 			if (restriction.Particle == null)
 				return;
@@ -594,25 +657,25 @@ namespace MonoDevelop.Xml.Completion
 				return;
 			}
 		}
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaElement element)
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaElement element)
 		{
 			var complexType = GetElementAsComplexType (element);
 			if (complexType != null)
 				GetAttributeCompletionData (data, complexType);
-		}	
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaComplexContentRestriction restriction)
-		{						
+		}
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexContentRestriction restriction)
+		{
 			GetAttributeCompletionData (data, restriction.Attributes);
-			
-			var baseComplexType = FindNamedType(schema, restriction.BaseTypeName);
+
+			var baseComplexType = FindNamedType (schema, restriction.BaseTypeName);
 			if (baseComplexType != null) {
 				GetAttributeCompletionData (data, baseComplexType);
 			}
 		}
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaComplexType complexType)
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexType complexType)
 		{
 			GetAttributeCompletionData (data, complexType.Attributes);
 
@@ -631,27 +694,27 @@ namespace MonoDevelop.Xml.Completion
 					GetAttributeCompletionData (data, simpleContent);
 			}
 		}
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaComplexContentExtension extension)
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaComplexContentExtension extension)
 		{
 			GetAttributeCompletionData (data, extension.Attributes);
 			var baseComplexType = FindNamedType (schema, extension.BaseTypeName);
 			if (baseComplexType != null)
 				GetAttributeCompletionData (data, baseComplexType);
-		}		
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaSimpleContent simpleContent)
+		}
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaSimpleContent simpleContent)
 		{
 			var extension = simpleContent.Content as XmlSchemaSimpleContentExtension;
 			if (extension != null)
 				GetAttributeCompletionData (data, extension);
 		}
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaSimpleContentExtension extension)
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaSimpleContentExtension extension)
 		{
 			GetAttributeCompletionData (data, extension.Attributes);
-		}		
-		
+		}
+
 		/// <summary>
 		/// Converts the element to a complex type if possible.
 		/// </summary>
@@ -660,13 +723,13 @@ namespace MonoDevelop.Xml.Completion
 			return (element.SchemaType as XmlSchemaComplexType)
 				?? FindNamedType (schema, element.SchemaTypeName);
 		}
-		
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaObjectCollection attributes)
+
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaObjectCollection attributes)
 		{
 			foreach (XmlSchemaObject schemaObject in attributes) {
 				var attribute = schemaObject as XmlSchemaAttribute;
 				if (attribute != null) {
-					if (!IsProhibitedAttribute(attribute)) {
+					if (!IsProhibitedAttribute (attribute)) {
 						data.AddAttribute (attribute);
 					} else {
 						prohibitedAttributes.Add (attribute);
@@ -678,7 +741,7 @@ namespace MonoDevelop.Xml.Completion
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Checks that the attribute is prohibited or has been flagged
 		/// as prohibited previously. 
@@ -696,31 +759,31 @@ namespace MonoDevelop.Xml.Completion
 					}
 				}
 			}
-		
+
 			return prohibited;
 		}
-		
+
 		/// <summary>
 		/// Gets attribute completion data from a group ref.
 		/// </summary>
-		void GetAttributeCompletionData (XmlCompletionDataList data, XmlSchemaAttributeGroupRef groupRef)
+		void GetAttributeCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaAttributeGroupRef groupRef)
 		{
 			var group = FindAttributeGroup (schema, groupRef.RefName.Name);
 			if (group != null)
 				GetAttributeCompletionData (data, group.Attributes);
 		}
-		
+
 		static XmlSchemaComplexType FindNamedType (XmlSchema schema, XmlQualifiedName name)
 		{
 			if (name == null)
 				return null;
-			
+
 			foreach (XmlSchemaObject schemaObject in schema.Items) {
 				var complexType = schemaObject as XmlSchemaComplexType;
 				if (complexType != null && complexType.QualifiedName == name)
-						return complexType;
+					return complexType;
 			}
-			
+
 			// Try included schemas.
 			foreach (XmlSchemaExternal external in schema.Includes) {
 				var include = external as XmlSchemaInclude;
@@ -730,10 +793,10 @@ namespace MonoDevelop.Xml.Completion
 						return matchedComplexType;
 				}
 			}
-			
+
 			return null;
-		}	
-		
+		}
+
 		/// <summary>
 		/// Finds an element that matches the specified <paramref name="name"/>
 		/// from the children of the given <paramref name="element"/>.
@@ -745,17 +808,17 @@ namespace MonoDevelop.Xml.Completion
 				return FindChildElement (complexType, name);
 			return null;
 		}
-		
+
 		XmlSchemaElement FindChildElement (XmlSchemaComplexType complexType, QualifiedName name)
 		{
 			var sequence = complexType.Particle as XmlSchemaSequence;
 			if (sequence != null)
 				return FindElement (sequence.Items, name);
-			
+
 			var choice = complexType.Particle as XmlSchemaChoice;
 			if (choice != null)
 				return FindElement (choice.Items, name);
-			
+
 			var complexContent = complexType.ContentModel as XmlSchemaComplexContent;
 			if (complexContent != null) {
 				var extension = complexContent.Content as XmlSchemaComplexContentExtension;
@@ -765,18 +828,18 @@ namespace MonoDevelop.Xml.Completion
 				if (restriction != null)
 					return FindChildElement (restriction, name);
 			}
-			
+
 			var groupRef = complexType.Particle as XmlSchemaGroupRef;
 			if (groupRef != null)
-				return FindElement(groupRef, name);
-			
+				return FindElement (groupRef, name);
+
 			var all = complexType.Particle as XmlSchemaAll;
 			if (all != null)
-				return FindElement(all.Items, name);
-			
+				return FindElement (all.Items, name);
+
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Finds the named child element contained in the extension element.
 		/// </summary>
@@ -785,26 +848,26 @@ namespace MonoDevelop.Xml.Completion
 			var complexType = FindNamedType (schema, extension.BaseTypeName);
 			if (complexType == null)
 				return null;
-			
+
 			var matchedElement = FindChildElement (complexType, name);
 			if (matchedElement != null)
 				return matchedElement;
-			
+
 			var sequence = extension.Particle as XmlSchemaSequence;
 			if (sequence != null)
 				return FindElement (sequence.Items, name);
-			
+
 			var choice = extension.Particle as XmlSchemaChoice;
 			if (choice != null)
 				return FindElement (choice.Items, name);
-			
+
 			var groupRef = extension.Particle as XmlSchemaGroupRef;
 			if (groupRef != null)
 				return FindElement (groupRef, name);
-			
+
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Finds the named child element contained in the restriction element.
 		/// </summary>
@@ -813,27 +876,27 @@ namespace MonoDevelop.Xml.Completion
 			var sequence = restriction.Particle as XmlSchemaSequence;
 			if (sequence != null)
 				return FindElement (sequence.Items, name);
-			
+
 			var groupRef = restriction.Particle as XmlSchemaGroupRef;
 			if (groupRef != null)
 				return FindElement (groupRef, name);
 
 			return null;
-		}		
-		
+		}
+
 		/// <summary>
 		/// Finds the element in the collection of schema objects.
 		/// </summary>
 		XmlSchemaElement FindElement (XmlSchemaObjectCollection items, QualifiedName name)
 		{
 			XmlSchemaElement matchedElement = null;
-			
+
 			foreach (XmlSchemaObject schemaObject in items) {
 				var element = schemaObject as XmlSchemaElement;
 				var sequence = schemaObject as XmlSchemaSequence;
 				var choice = schemaObject as XmlSchemaChoice;
 				var groupRef = schemaObject as XmlSchemaGroupRef;
-				
+
 				if (element != null) {
 					if (element.Name != null) {
 						if (name.Name == element.Name) {
@@ -856,41 +919,41 @@ namespace MonoDevelop.Xml.Completion
 				} else if (groupRef != null) {
 					matchedElement = FindElement (groupRef, name);
 				}
-				
+
 				if (matchedElement != null)
 					return matchedElement;
 			}
-			
+
 			return null;
 		}
-		
+
 		XmlSchemaElement FindElement (XmlSchemaGroupRef groupRef, QualifiedName name)
 		{
 			var group = FindGroup (groupRef.RefName.Name);
 			if (group == null)
 				return null;
-			
+
 			var sequence = group.Particle as XmlSchemaSequence;
 			if (sequence != null)
 				return FindElement (sequence.Items, name);
 			var choice = group.Particle as XmlSchemaChoice;
 			if (choice != null)
 				return FindElement (choice.Items, name);
-			
+
 			return null;
 		}
-		
+
 		static XmlSchemaAttributeGroup FindAttributeGroup (XmlSchema schema, string name)
 		{
 			if (name == null)
 				return null;
-			
+
 			foreach (XmlSchemaObject schemaObject in schema.Items) {
 				var group = schemaObject as XmlSchemaAttributeGroup;
 				if (group != null && group.Name == name)
 					return group;
 			}
-			
+
 			// Try included schemas.
 			foreach (XmlSchemaExternal external in schema.Includes) {
 				var include = external as XmlSchemaInclude;
@@ -902,8 +965,8 @@ namespace MonoDevelop.Xml.Completion
 			}
 			return null;
 		}
-		
-		void GetAttributeValueCompletionData (XmlCompletionDataList data, XmlSchemaElement element, string name)
+
+		void GetAttributeValueCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaElement element, string name)
 		{
 			var complexType = GetElementAsComplexType (element);
 			if (complexType != null) {
@@ -912,9 +975,9 @@ namespace MonoDevelop.Xml.Completion
 					GetAttributeValueCompletionData (data, attribute);
 			}
 		}
-		
-		void GetAttributeValueCompletionData (XmlCompletionDataList data, XmlSchemaAttribute attribute)
-		{			
+
+		void GetAttributeValueCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaAttribute attribute)
+		{
 			if (attribute.SchemaType != null) {
 				var simpleTypeRestriction = attribute.SchemaType.Content as XmlSchemaSimpleTypeRestriction;
 				if (simpleTypeRestriction != null) {
@@ -927,8 +990,8 @@ namespace MonoDevelop.Xml.Completion
 					GetAttributeValueCompletionData (data, attribute.AttributeSchemaType);
 			}
 		}
-		
-		void GetAttributeValueCompletionData (XmlCompletionDataList data, XmlSchemaSimpleTypeRestriction simpleTypeRestriction)
+
+		void GetAttributeValueCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaSimpleTypeRestriction simpleTypeRestriction)
 		{
 			foreach (XmlSchemaObject schemaObject in simpleTypeRestriction.Facets) {
 				var enumFacet = schemaObject as XmlSchemaEnumerationFacet;
@@ -936,17 +999,17 @@ namespace MonoDevelop.Xml.Completion
 					data.AddAttributeValue (enumFacet.Value, enumFacet.Annotation);
 			}
 		}
-		
-		void GetAttributeValueCompletionData (XmlCompletionDataList data, XmlSchemaSimpleTypeUnion union)
+
+		void GetAttributeValueCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaSimpleTypeUnion union)
 		{
 			foreach (XmlSchemaObject schemaObject in union.BaseTypes) {
 				var simpleType = schemaObject as XmlSchemaSimpleType;
 				if (simpleType != null)
 					GetAttributeValueCompletionData (data, simpleType);
 			}
-		}		
-		
-		void GetAttributeValueCompletionData (XmlCompletionDataList data, XmlSchemaSimpleType simpleType)
+		}
+
+		void GetAttributeValueCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaSimpleType simpleType)
 		{
 			var xsstr = simpleType.Content as XmlSchemaSimpleTypeRestriction;
 			if (xsstr != null) {
@@ -963,9 +1026,9 @@ namespace MonoDevelop.Xml.Completion
 				GetAttributeValueCompletionData (data, xsstl);
 				return;
 			}
-		}		
-			
-		void GetAttributeValueCompletionData (XmlCompletionDataList data, XmlSchemaSimpleTypeList list)
+		}
+
+		void GetAttributeValueCompletionData (XmlSchemaCompletionBuilder data, XmlSchemaSimpleTypeList list)
 		{
 			if (list.ItemType != null) {
 				GetAttributeValueCompletionData (data, list.ItemType);
@@ -974,39 +1037,39 @@ namespace MonoDevelop.Xml.Completion
 				if (simpleType != null)
 					GetAttributeValueCompletionData (data, simpleType);
 			}
-		}	
-		
+		}
+
 		/// <summary>
 		/// Gets the set of attribute values for an xs:boolean type.
 		/// </summary>
-		void GetBooleanAttributeValueCompletionData (XmlCompletionDataList data)
+		void GetBooleanAttributeValueCompletionData (XmlSchemaCompletionBuilder data)
 		{
 			data.AddAttributeValue ("0");
 			data.AddAttributeValue ("1");
 			data.AddAttributeValue ("true");
 			data.AddAttributeValue ("false");
 		}
-		
+
 		XmlSchemaAttribute FindAttribute (XmlSchemaComplexType complexType, string name)
 		{
 			var matchedAttribute = FindAttribute (complexType.Attributes, name);
 			if (matchedAttribute != null)
 				return matchedAttribute;
-			
+
 			var complexContent = complexType.ContentModel as XmlSchemaComplexContent;
 			if (complexContent != null)
 				return FindAttribute (complexContent, name);
-			
+
 			return null;
 		}
-		
+
 		XmlSchemaAttribute FindAttribute (XmlSchemaObjectCollection schemaObjects, string name)
 		{
 			foreach (XmlSchemaObject schemaObject in schemaObjects) {
 				var attribute = schemaObject as XmlSchemaAttribute;
 				if (attribute != null && attribute.Name == name)
 					return attribute;
-				
+
 				var groupRef = schemaObject as XmlSchemaAttributeGroupRef;
 				if (groupRef != null) {
 					var matchedAttribute = FindAttribute (groupRef, name);
@@ -1016,7 +1079,7 @@ namespace MonoDevelop.Xml.Completion
 			}
 			return null;
 		}
-		
+
 		XmlSchemaAttribute FindAttribute (XmlSchemaAttributeGroupRef groupRef, string name)
 		{
 			if (groupRef.RefName != null) {
@@ -1027,38 +1090,38 @@ namespace MonoDevelop.Xml.Completion
 			}
 			return null;
 		}
-		
+
 		XmlSchemaAttribute FindAttribute (XmlSchemaComplexContent complexContent, string name)
 		{
 			var extension = complexContent.Content as XmlSchemaComplexContentExtension;
 			if (extension != null)
 				return FindAttribute (extension, name);
-			
+
 			var restriction = complexContent.Content as XmlSchemaComplexContentRestriction;
 			if (restriction != null)
 				return FindAttribute (restriction, name);
-			
+
 			return null;
-		}		
-		
+		}
+
 		XmlSchemaAttribute FindAttribute (XmlSchemaComplexContentExtension extension, string name)
 		{
 			return FindAttribute (extension.Attributes, name);
-		}			
-		
+		}
+
 		XmlSchemaAttribute FindAttribute (XmlSchemaComplexContentRestriction restriction, string name)
 		{
 			var matchedAttribute = FindAttribute (restriction.Attributes, name);
 			if (matchedAttribute != null)
 				return matchedAttribute;
-			
+
 			var complexType = FindNamedType (schema, restriction.BaseTypeName);
 			if (complexType != null)
 				return FindAttribute (complexType, name);
-			
+
 			return null;
 		}
-		
+
 		XmlSchemaSimpleType FindSimpleType (XmlQualifiedName name)
 		{
 			foreach (XmlSchemaObject schemaObject in schema.SchemaTypes.Values) {
@@ -1068,17 +1131,17 @@ namespace MonoDevelop.Xml.Completion
 			}
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Adds any elements that have the specified substitution group.
 		/// </summary>
-		void AddSubstitionGroupElements (XmlCompletionDataList data, XmlQualifiedName group, string prefix)
+		void AddSubstitionGroupElements (XmlSchemaCompletionBuilder data, XmlQualifiedName group, string prefix)
 		{
 			foreach (XmlSchemaElement element in schema.Elements.Values)
 				if (element.SubstitutionGroup == group)
 					data.AddElement (element.Name, prefix, element.Annotation);
 		}
-		
+
 		/// <summary>
 		/// Looks for the substitution group element of the specified name.
 		/// </summary>
@@ -1087,7 +1150,7 @@ namespace MonoDevelop.Xml.Completion
 			foreach (XmlSchemaElement element in schema.Elements.Values)
 				if (element.SubstitutionGroup == group && element.Name != null && element.Name == name.Name)
 					return element;
-			
+
 			return null;
 		}
 	}

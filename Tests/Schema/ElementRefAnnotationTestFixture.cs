@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,7 +13,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class ElementRefAnnotationTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList fooChildElementCompletionData;
+		CompletionContext fooChildElementCompletionData;
 		
 		async Task Init ()
 		{
@@ -23,14 +23,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://foo.com"));
 			
-			fooChildElementCompletionData = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			fooChildElementCompletionData = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 				
 		[Test]
 		public async Task BarElementDocumentation()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.ContainsDescription(fooChildElementCompletionData, "bar", "Documentation for bar element."),
+			Assert.IsTrue(await SchemaTestFixtureBase.ContainsDescription(fooChildElementCompletionData, "bar", "Documentation for bar element."),
 			              "Missing documentation for bar element");
 		}
 		

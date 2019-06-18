@@ -9,15 +9,11 @@
     <Compile Remove="Formatting\XmlFormatter.cs" />
     <Compile Remove="Formatting\XmlFormatterWriter.cs" />
     <Compile Remove="Formatting\XmlFormattingPolicy.cs" />
-    <Compile Remove="Formatting\XmlFormattingPolicyPanel.cs" />
-    <Compile Remove="Formatting\XmlFormattingPolicyPanelWidget.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Formatting\XmlFormatter.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Formatting\XmlFormatterWriter.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
     <None Include="Formatting\XmlFormattingPolicy.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Formatting\XmlFormattingPolicyPanel.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Formatting\XmlFormattingPolicyPanelWidget.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
   </ItemGroup>
 </Project>

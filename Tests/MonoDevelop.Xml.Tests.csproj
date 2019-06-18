@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
@@ -12,92 +12,22 @@
     <ProjectReference Include="..\Xml\MonoDevelop.Xml.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="CompletionData\XmlCompletionDataImageTestFixture.cs" />
-    <Compile Remove="CompletionData\XmlCompletionDataStringTestFixture.cs" />
     <Compile Remove="Formatting\XmlFormatterTests.cs" />
-    <Compile Remove="Schema\AbstractElementTestFixture.cs" />
-    <Compile Remove="Schema\AllElementTestFixture.cs" />
-    <Compile Remove="Schema\AttributeAnnotationTestFixture.cs" />
-    <Compile Remove="Schema\AttributeGroupRefTestFixture.cs" />
-    <Compile Remove="Schema\AttributeRefTestFixture.cs" />
-    <Compile Remove="Schema\AttributeValueAnnotationTestFixture.cs" />
-    <Compile Remove="Schema\ChildElementAttributesTestFixture.cs" />
-    <Compile Remove="Schema\ChoiceTestFixture.cs" />
-    <Compile Remove="Schema\ComplexContentExtensionTestFixture.cs" />
-    <Compile Remove="Schema\DuplicateElementTestFixture.cs" />
-    <Compile Remove="Schema\ElementAnnotationTestFixture.cs" />
-    <Compile Remove="Schema\ElementRefAnnotationTestFixture.cs" />
-    <Compile Remove="Schema\ElementWithAttributeSchemaTestFixture.cs" />
-    <Compile Remove="Schema\EnumAttributeValueTestFixture.cs" />
-    <Compile Remove="Schema\ExtensionElementTestFixture.cs" />
-    <Compile Remove="Schema\FindAttributeFromComplexTypeTestFixture.cs" />
-    <Compile Remove="Schema\GroupRefCompositorTestFixture.cs" />
-    <Compile Remove="Schema\GroupRefTestFixture.cs" />
-    <Compile Remove="Schema\MissingSchemaElementTestFixture.cs" />
-    <Compile Remove="Schema\NamespaceCompletionTestFixture.cs" />
-    <Compile Remove="Schema\NestedAttributeGroupRefTestFixture.cs" />
-    <Compile Remove="Schema\NestedChoiceTestFixture.cs" />
-    <Compile Remove="Schema\NestedElementSchemaTestFixture.cs" />
-    <Compile Remove="Schema\NestedSequenceTestFixture.cs" />
-    <Compile Remove="Schema\ReferencedElementsTestFixture.cs" />
-    <Compile Remove="Schema\RestrictionElementTestFixture.cs" />
     <Compile Remove="Schema\SchemaAssociationTests.cs" />
-    <Compile Remove="Schema\SchemaTestFixtureBase.cs" />
-    <Compile Remove="Schema\SequencedChoiceTestFixture.cs" />
-    <Compile Remove="Schema\SimpleContentWithAttributeTestFixture.cs" />
-    <Compile Remove="Schema\SingleElementSchemaTestFixture.cs" />
-    <Compile Remove="Schema\TwoElementSchemaTestFixture.cs" />
-    <Compile Remove="Schema\XhtmlStrictSchemaTestFixture.cs" />
     <Compile Remove="Schema\XmlSchemaNamespaceTests.cs" />
-    <Compile Remove="Schema\XsdSchemaTestFixture.cs" />
-    <Compile Remove="Schema\Includes\AttributeGroupRefSchemaIncludeTestFixture.cs" />
-    <Compile Remove="Schema\Includes\TwoElementSchemaIncludeTestFixture.cs" />
-    <Compile Remove="Utils\SchemaIncludeTestFixtureHelper.cs" />
-    <Compile Remove="Schema\Uri\GetUriTestFixture.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CompletionData\XmlCompletionDataImageTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="CompletionData\XmlCompletionDataStringTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Formatting\XmlFormatterTests.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\AbstractElementTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\AllElementTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\AttributeAnnotationTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\AttributeGroupRefTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\AttributeRefTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\AttributeValueAnnotationTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ChildElementAttributesTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ChoiceTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ComplexContentExtensionTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\DuplicateElementTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ElementAnnotationTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ElementRefAnnotationTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ElementWithAttributeSchemaTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\EnumAttributeValueTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ExtensionElementTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\FindAttributeFromComplexTypeTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\GroupRefCompositorTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\GroupRefTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\MissingSchemaElementTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\NamespaceCompletionTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\NestedAttributeGroupRefTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\NestedChoiceTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\NestedElementSchemaTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\NestedSequenceTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\ReferencedElementsTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\RestrictionElementTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\SchemaAssociationTests.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\SchemaTestFixtureBase.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\SequencedChoiceTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\SimpleContentWithAttributeTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\SingleElementSchemaTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\TwoElementSchemaTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\XhtmlStrictSchemaTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\XmlSchemaNamespaceTests.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\XsdSchemaTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\Includes\AttributeGroupRefSchemaIncludeTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\Includes\TwoElementSchemaIncludeTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Utils\SchemaIncludeTestFixtureHelper.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
-    <None Include="Schema\Uri\GetUriTestFixture.cs" Condition=" '$(EnableDefaultCompileItems)' == 'true' " />
+    <None Remove="Schema\xhtml1-strict.xsd" />
+    <None Remove="Schema\XMLSchema.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Schema\xhtml1-strict.xsd" LogicalName="xhtml1-strict.xsd" />
+    <EmbeddedResource Include="Schema\XMLSchema.xsd" LogicalName="XMLSchema.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Formatting\XmlFormatterTests.cs" />
+    <None Include="Schema\SchemaAssociationTests.cs" />
+    <None Include="Schema\XmlSchemaNamespaceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Neteril.VisualStudio.MiniEditor" Version="1.0.6" PrivateAssets="all" />

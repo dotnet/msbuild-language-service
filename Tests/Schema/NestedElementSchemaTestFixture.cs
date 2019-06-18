@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -10,7 +10,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	public class NestedElementSchemaTestFixture : SchemaTestFixtureBase
 	{
 		XmlElementPath noteElementPath;
-		CompletionDataList elementData;
+		CompletionContext elementData;
 		
 		async Task Init ()
 		{
@@ -20,14 +20,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 			noteElementPath = new XmlElementPath();
 			noteElementPath.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 
-			elementData = await SchemaCompletionData.GetChildElementCompletionData(noteElementPath, CancellationToken.None); 
+			elementData = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, noteElementPath, CancellationToken.None); 
 		}
 		
 		[Test]
 		public async Task NoteHasOneChildElementCompletionDataItem()
 		{
 			await Init ();
-			Assert.AreEqual(1, elementData.Count, "Should be one child element completion data item.");
+			Assert.AreEqual(1, elementData.Items.Length, "Should be one child element completion data item.");
 		}
 		
 		[Test]

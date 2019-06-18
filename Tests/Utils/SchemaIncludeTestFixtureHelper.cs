@@ -44,7 +44,7 @@ namespace MonoDevelop.Xml.Tests.Utils
 		/// </summary>
 		/// <param name="mainSchema">The main schema's xml.</param>
 		/// <param name="includedSchema">The included schema's xml.</param>
-		public static XmlSchemaCompletionProvider CreateSchemaCompletionDataObject(string mainSchema, string includedSchema)
+		internal static XmlSchemaCompletionProvider CreateSchemaCompletionDataObject(string mainSchema, string includedSchema)
 		{	
 			if (!Directory.Exists(schemaPath)) {
 				Directory.CreateDirectory(schemaPath);

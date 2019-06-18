@@ -1,4 +1,5 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -11,10 +12,10 @@ namespace MonoDevelop.Xml.Tests.Schema
 	/// </summary>
 	[TestFixture]
 	public class AbstractElementTestFixture : SchemaTestFixtureBase
-	{		
-		CompletionDataList itemsElementChildren;
-		CompletionDataList fileElementAttributes;
-		CompletionDataList fileElementChildren;
+	{
+		CompletionContext itemsElementChildren;
+		CompletionContext fileElementAttributes;
+		CompletionContext fileElementChildren;
 		
 		async Task Init ()
 		{
@@ -26,20 +27,22 @@ namespace MonoDevelop.Xml.Tests.Schema
 			path.Elements.Add(new QualifiedName("project", "http://foo"));
 			path.Elements.Add(new QualifiedName("items", "http://foo"));
 
-			itemsElementChildren = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			IAsyncCompletionSource source = DummyCompletionSource.Instance;
+
+			itemsElementChildren = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 			
 			path.Elements.Add(new QualifiedName("file", "http://foo"));
-			
-			fileElementAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
-			fileElementChildren = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+
+			fileElementAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
+
+			fileElementChildren = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task ItemsElementHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, itemsElementChildren.Count, 
-			                "Should be 2 child elements.");
+			Assert.AreEqual (2, itemsElementChildren.Items.Length, "Should be 2 child elements.");
 		}
 		
 		[Test]
@@ -67,7 +70,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task FileElementHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, fileElementChildren.Count, "Should be 2 child elements.");
+			Assert.AreEqual(2, fileElementChildren.Items.Length, "Should be 2 child elements.");
 		}
 		
 		protected override string GetSchema()

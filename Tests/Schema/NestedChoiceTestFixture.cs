@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,8 +13,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class NestedChoiceTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList noteChildElements;
-		CompletionDataList titleChildElements;
+		CompletionContext noteChildElements;
+		CompletionContext titleChildElements;
 		
 		async Task Init ()
 		{
@@ -25,19 +25,18 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 
-			noteChildElements = await SchemaCompletionData.GetChildElementCompletionData (path, CancellationToken.None);
+			noteChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		
 			// Get title child elements.
 			path.Elements.Add(new QualifiedName("title", "http://www.w3schools.com"));
-			titleChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			titleChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task TitleHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, titleChildElements.Count, 
-			                "Should be 2 child elements.");
+			Assert.AreEqual(2, titleChildElements.Items.Length, "Should be 2 child elements.");
 		}
 		
 		[Test]
@@ -47,7 +46,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 			path.Elements.Add(new QualifiedName("text", "http://www.w3schools.com"));
-			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None)).Count, 
+			Assert.AreEqual(0, (await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None)).Items.Length, 
 			                "Should be no child elements.");
 		}		
 		
@@ -55,8 +54,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task NoteHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, noteChildElements.Count, 
-			                "Should be two child elements.");
+			Assert.AreEqual(2, noteChildElements.Items.Length, "Should be two child elements.");
 		}
 		
 		[Test]

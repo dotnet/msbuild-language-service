@@ -1,8 +1,9 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MonoDevelop.Xml.Tests.Schema
 {
@@ -17,7 +18,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		/// </summary>
 		/// <remarks>This object will be null until the <see cref="FixtureInitBase"/>
 		/// has been run.</remarks>
-		public XmlSchemaCompletionProvider SchemaCompletionData {
+		internal XmlSchemaCompletionProvider SchemaCompletionData {
 			get {
 				return schemaCompletionData;
 			}
@@ -29,7 +30,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		/// </summary>
 		/// <remarks>Calls <see cref="FixtureInit"/> at the end of the method.
 		/// </remarks>
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void FixtureInitBase()
 		{
 			schemaCompletionData = CreateSchemaCompletionDataObject();
@@ -43,15 +44,15 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public virtual void FixtureInit()
 		{
 		}
-	
+
 		/// <summary>
 		/// Checks whether the specified name exists in the completion data.
 		/// </summary>
-		public static bool Contains(CompletionDataList items, string name)
+		public static bool Contains(CompletionContext items, string name)
 		{
 			bool Contains = false;
 			
-			foreach (var data in items) {
+			foreach (var data in items.Items) {
 				if (data.DisplayText == name) {
 					Contains = true;
 					break;
@@ -65,16 +66,16 @@ namespace MonoDevelop.Xml.Tests.Schema
 		/// Checks whether the completion data specified by name has
 		/// the correct description.
 		/// </summary>
-		public static bool ContainsDescription(CompletionDataList items, string name, string description)
+		public static async Task<bool> ContainsDescription(CompletionContext items, string name, string description)
 		{
 			bool Contains = false;
 			
-			foreach (var data in items) {
+			foreach (var data in items.Items) {
 				if (data.DisplayText == name) {
-					//if (data.DisplayText == description) {
+					if ((await data.GetDocumentationAsync () as string) == description) {
 						Contains = true;
 						break;						
-					//}
+					}
 				}
 			}
 				
@@ -85,11 +86,11 @@ namespace MonoDevelop.Xml.Tests.Schema
 		/// Gets a count of the number of occurrences of a particular name
 		/// in the completion data.
 		/// </summary>
-		public static int GetItemCount(CompletionDataList items, string name)
+		public static int GetItemCount(CompletionContext items, string name)
 		{
 			int count = 0;
 			
-			foreach (var data in items) {
+			foreach (var data in items.Items) {
 				if (data.DisplayText == name) {
 					++count;
 				}
@@ -111,7 +112,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		/// Creates an <see cref="XmlSchemaCompletionProvider"/> object that 
 		/// will be used in the test fixture.
 		/// </summary>
-		protected virtual XmlSchemaCompletionProvider CreateSchemaCompletionDataObject()
+		internal virtual XmlSchemaCompletionProvider CreateSchemaCompletionDataObject()
 		{
 			StringReader reader = new StringReader(GetSchema());
 			return new XmlSchemaCompletionProvider(reader);

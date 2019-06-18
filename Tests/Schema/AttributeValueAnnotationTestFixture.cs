@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,7 +13,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class AttributeValueAnnotationTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList barAttributeValuesCompletionData;
+		CompletionContext barAttributeValuesCompletionData;
 		
 		async Task Init ()
 		{
@@ -21,14 +21,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 				return;
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://foo.com"));
-			barAttributeValuesCompletionData = await SchemaCompletionData.GetAttributeValueCompletionData(path, "bar", CancellationToken.None);
+			barAttributeValuesCompletionData = await SchemaCompletionData.GetAttributeValueCompletionDataAsync (DummyCompletionSource.Instance, path, "bar", CancellationToken.None);
 		}
 				
 		[Test]
 		public async Task BarAttributeValueDefaultDocumentation()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.ContainsDescription(barAttributeValuesCompletionData, "default", "Default attribute value info."),
+			Assert.IsTrue(await SchemaTestFixtureBase.ContainsDescription(barAttributeValuesCompletionData, "default", "Default attribute value info."),
 			                "Description for attribute value 'default' is incorrect.");
 		}
 		

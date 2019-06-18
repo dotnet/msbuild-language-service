@@ -10,16 +10,15 @@ namespace MonoDevelop.Xml.Tests.Schema.Includes
 	/// generating completion data.
 	/// </summary>
 	[TestFixture]
-	[Ignore]
 	public class TwoElementSchemaIncludeTestFixture : TwoElementSchemaTestFixture
 	{
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void FixtureTearDown()
 		{
 			SchemaIncludeTestFixtureHelper.FixtureTearDown();
 		}
 		
-		protected override XmlSchemaCompletionProvider CreateSchemaCompletionDataObject()
+		internal override XmlSchemaCompletionProvider CreateSchemaCompletionDataObject()
 		{	
 			return SchemaIncludeTestFixtureHelper.CreateSchemaCompletionDataObject(GetMainSchema(), GetSchema());
 		}

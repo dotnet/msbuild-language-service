@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class EnumAttributeValueTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList attributeValues;
+		CompletionContext attributeValues;
 		
 		async Task Init ()
 		{
@@ -20,7 +20,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 				return;
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://foo.com"));
-			attributeValues = await SchemaCompletionData.GetAttributeValueCompletionData(path, "id", CancellationToken.None);
+			attributeValues = await SchemaCompletionData.GetAttributeValueCompletionDataAsync (DummyCompletionSource.Instance, path, "id", CancellationToken.None);
 		}
 		
 		[Test]
@@ -43,7 +43,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task IdAttributeValueCount()
 		{
 			await Init ();
-			Assert.AreEqual(2, attributeValues.Count, "Expecting 2 attribute values.");
+			Assert.AreEqual(2, attributeValues.Items.Length, "Expecting 2 attribute values.");
 		}
 		
 		protected override string GetSchema()

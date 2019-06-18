@@ -7,14 +7,6 @@
 
   <ItemGroup>
     <Compile Remove="BaseXmlEditorExtension.cs" />
-    <Compile Remove="Completion\InferredXmlCompletionProvider.cs" />
-    <Compile Remove="Completion\IXmlSchemaService.cs" />
-    <Compile Remove="Completion\XmlCompletionData.cs" />
-    <Compile Remove="Completion\XmlCompletionDataList.cs" />
-    <Compile Remove="Completion\XmlMultipleClosingTagCompletionData.cs" />
-    <Compile Remove="Completion\XmlSchemaCompletionDataCollection.cs" />
-    <Compile Remove="Completion\XmlSchemaCompletionProvider.cs" />
-    <Compile Remove="Completion\XmlTagCompletionData.cs" />
     <Compile Remove="XmlDocumentParser.cs" />
     <Compile Remove="XmlEditorOptions.cs" />
     <Compile Remove="XmlParsedDocument.cs" />
@@ -23,14 +15,6 @@
 
   <ItemGroup>
     <None Include="BaseXmlEditorExtension.cs" />
-    <None Include="Completion\InferredXmlCompletionProvider.cs" />
-    <None Include="Completion\IXmlSchemaService.cs" />
-    <None Include="Completion\XmlCompletionData.cs" />
-    <None Include="Completion\XmlCompletionDataList.cs" />
-    <None Include="Completion\XmlMultipleClosingTagCompletionData.cs" />
-    <None Include="Completion\XmlSchemaCompletionDataCollection.cs" />
-    <None Include="Completion\XmlSchemaCompletionProvider.cs" />
-    <None Include="Completion\XmlTagCompletionData.cs" />
     <None Include="XmlDocumentParser.cs" />
     <None Include="XmlEditorOptions.cs" />
     <None Include="XmlParsedDocument.cs" />

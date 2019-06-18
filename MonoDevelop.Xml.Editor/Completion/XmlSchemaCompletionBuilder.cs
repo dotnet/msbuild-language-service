@@ -26,28 +26,40 @@
 
 using System;
 using System.Collections.Generic;
-using MonoDevelop.Ide.CodeCompletion;
 using System.Text;
 using System.Xml.Schema;
 using System.Xml;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using MonoDevelop.Xml.Editor.Completion;
+using System.Collections.Immutable;
 
 namespace MonoDevelop.Xml.Completion
 {
-	public class XmlCompletionDataList: CompletionDataList
+	class XmlSchemaCompletionBuilder
 	{
+		List<CompletionItem> items = new List<CompletionItem> ();
+
 		HashSet<string> names = new HashSet<string> ();
-		XmlNamespacePrefixMap nsMap;
-		
-		public XmlCompletionDataList (XmlNamespacePrefixMap nsMap)
+		readonly XmlNamespacePrefixMap nsMap;
+		readonly IAsyncCompletionSource source;
+
+		public XmlSchemaCompletionBuilder (IAsyncCompletionSource source, XmlNamespacePrefixMap nsMap)
 		{
 			this.nsMap = nsMap;
+			this.source = source;
 		}
-		
-		public XmlCompletionDataList ()
+
+		public XmlSchemaCompletionBuilder (IAsyncCompletionSource source) : this (source, new XmlNamespacePrefixMap ())
 		{
-			this.nsMap = new XmlNamespacePrefixMap ();
 		}
-		
+
+		internal void AddNamespace (string namespaceUri)
+		{
+			var item = new CompletionItem (namespaceUri, source, XmlImages.NamespaceImage);
+			items.Add (item);
+		}
+
 		public void AddAttribute (XmlSchemaAttribute attribute)
 		{
 			string name = attribute.Name;
@@ -68,19 +80,22 @@ namespace MonoDevelop.Xml.Completion
 			}
 			if (!names.Add (name))
 				return;
-			string documentation = GetDocumentation (attribute.Annotation);
-			Add (new XmlCompletionData (name, documentation, XmlCompletionData.DataType.XmlAttribute));
+			var item = new CompletionItem (name, source, XmlImages.AttributeImage);
+			item.AddDocumentation (attribute.Annotation);
+			items.Add (item);
 		}
 		
 		public void AddAttributeValue (string valueText)
 		{
-			Add (new XmlCompletionData (valueText, XmlCompletionData.DataType.XmlAttributeValue));
+			var item = new CompletionItem (valueText, source, XmlImages.AttributeValueImage);
+			items.Add (item);
 		}
 		
 		public void AddAttributeValue (string valueText, XmlSchemaAnnotation annotation)
 		{
-			string documentation = GetDocumentation (annotation);
-			Add (new XmlCompletionData (valueText, documentation, XmlCompletionData.DataType.XmlAttributeValue));
+			var item = new CompletionItem (valueText, source, XmlImages.AttributeValueImage);
+			item.AddDocumentation (annotation);
+			items.Add (item);
 		}		
 		
 		/// <summary>
@@ -93,9 +108,11 @@ namespace MonoDevelop.Xml.Completion
 				return;
 			//FIXME: don't accept a prefix, accept a namespace and resolve it to a prefix
 			if (prefix.Length > 0)
-				name = String.Concat (prefix, ":", name);
-			
-			Add (new XmlCompletionData (name, documentation));				
+				name = string.Concat (prefix, ":", name);
+
+			var item = new CompletionItem (name, source, XmlImages.ElementImage);
+			item.AddDocumentation (documentation);
+			items.Add (item);
 		}
 		
 		/// <summary>
@@ -104,35 +121,20 @@ namespace MonoDevelop.Xml.Completion
 		/// </summary>
 		public void AddElement (string name, string prefix, XmlSchemaAnnotation annotation)
 		{
-			string documentation = GetDocumentation (annotation);
-			AddElement (name, prefix, documentation);
+			if (!names.Add (name))
+				return;
+			//FIXME: don't accept a prefix, accept a namespace and resolve it to a prefix
+			if (prefix.Length > 0)
+				name = string.Concat (prefix, ":", name);
+
+			var item = new CompletionItem (name, source, XmlImages.ElementImage);
+			item.AddDocumentation (annotation);
+			items.Add (item);
 		}
-		
-		/// <summary>
-		/// Gets the documentation from the annotation element.
-		/// </summary>
-		/// <remarks>
-		/// All documentation elements are added.  All text nodes inside
-		/// the documentation element are added.
-		/// </remarks>
-		static string GetDocumentation (XmlSchemaAnnotation annotation)
+
+		public ImmutableArray<CompletionItem> GetItems ()
 		{
-			if (annotation == null)
-				return "";
-			
-			var documentationBuilder = new StringBuilder ();
-			foreach (XmlSchemaObject schemaObject in annotation.Items) {
-				var schemaDocumentation = schemaObject as XmlSchemaDocumentation;
-				if (schemaDocumentation != null && schemaDocumentation.Markup != null) {
-					foreach (XmlNode node in schemaDocumentation.Markup) {
-						var textNode = node as XmlText;
-						if (textNode != null && !string.IsNullOrEmpty (textNode.Data))
-							documentationBuilder.Append (textNode.Data);
-					}
-				}
-			}
-			
-			return documentationBuilder.ToString ();
+			return ImmutableArray<CompletionItem>.Empty.AddRange (items);
 		}
 	}
 }

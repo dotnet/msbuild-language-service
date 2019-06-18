@@ -1,4 +1,5 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -12,30 +13,32 @@ namespace MonoDevelop.Xml.Tests.Schema
 	/// </summary>
 	[TestFixture]
 	public class AllElementTestFixture : SchemaTestFixtureBase
-	{		
-		CompletionDataList personElementChildren;
-		CompletionDataList firstNameAttributes;
-		CompletionDataList firstNameElementChildren;
+	{
+		CompletionContext personElementChildren;
+		CompletionContext firstNameAttributes;
+		CompletionContext firstNameElementChildren;
 		
 		async Task Init ()
 		{
 			if (personElementChildren != null)
 				return;
+
+			IAsyncCompletionSource source = DummyCompletionSource.Instance;
 			
 			var path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("person", "http://foo"));
-			personElementChildren = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			personElementChildren = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 			
 			path.Elements.Add(new QualifiedName("firstname", "http://foo"));
-			firstNameAttributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
-			firstNameElementChildren = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			firstNameAttributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
+			firstNameElementChildren = await SchemaCompletionData.GetChildElementCompletionDataAsync (source, path, CancellationToken.None);
 		}
 		
 		[Test]
 		public async Task PersonElementHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, personElementChildren.Count, 
+			Assert.AreEqual(2, personElementChildren.Items.Length, 
 			                "Should be 2 child elements.");
 		}
 		
@@ -43,14 +46,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task FirstNameElementHasAttribute()
 		{
 			await Init ();
-			Assert.AreEqual(1, firstNameAttributes.Count, "Should have one attribute.");
+			Assert.AreEqual(1, firstNameAttributes.Items.Length, "Should have one attribute.");
 		}
 		
 		[Test]
 		public async Task FirstNameElementHasChildren()
 		{
 			await Init ();
-			Assert.AreEqual(2, firstNameElementChildren.Count, 
+			Assert.AreEqual(2, firstNameElementChildren.Items.Length, 
 			                "Should be 2 child elements.");
 		}
 		

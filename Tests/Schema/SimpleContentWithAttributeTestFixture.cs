@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class SimpleContentWithAttributeSchemaTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList attributeCompletionData;
+		CompletionContext attributeCompletionData;
 		
 		async Task Init ()
 		{
@@ -22,7 +22,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://foo.com"));
 			
-			attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}
 		
 		[Test]

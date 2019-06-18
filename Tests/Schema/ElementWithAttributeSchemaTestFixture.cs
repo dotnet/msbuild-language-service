@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class ElementWithAttributeSchemaTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList attributeCompletionData;
+		CompletionContext attributeCompletionData;
 		string attributeName;
 		
 		async Task Init ()
@@ -22,15 +22,15 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("note", "http://www.w3schools.com"));
 						
-			attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
-			attributeName = attributeCompletionData[0].DisplayText;
+			attributeCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
+			attributeName = attributeCompletionData.Items[0].DisplayText;
 		}
 
 		[Test]
 		public async Task AttributeCount()
 		{
 			await Init ();
-			Assert.AreEqual(1, attributeCompletionData.Count, "Should be one attribute.");
+			Assert.AreEqual(1, attributeCompletionData.Items.Length, "Should be one attribute.");
 		}
 		
 		[Test]
@@ -46,9 +46,9 @@ namespace MonoDevelop.Xml.Tests.Schema
 			await Init ();
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foobar", "http://www.w3schools.com"));
-			CompletionDataList attributes = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			var attributes = await SchemaCompletionData.GetAttributeCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 			
-			Assert.AreEqual(0, attributes.Count, "Should not find attributes for unknown element.");
+			Assert.AreEqual(0, attributes.Items.Length, "Should not find attributes for unknown element.");
 		}
 		
 		protected override string GetSchema()

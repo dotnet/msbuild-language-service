@@ -1,4 +1,4 @@
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System.Threading;
@@ -12,7 +12,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class DuplicateElementTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList htmlChildElements;
+		CompletionContext htmlChildElements;
 		
 		async Task Init ()
 		{
@@ -21,31 +21,28 @@ namespace MonoDevelop.Xml.Tests.Schema
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("html", "http://foo/xhtml"));
 		
-			htmlChildElements = await SchemaCompletionData.GetChildElementCompletionData(path, CancellationToken.None);
+			htmlChildElements = await SchemaCompletionData.GetChildElementCompletionDataAsync (DummyCompletionSource.Instance, path, CancellationToken.None);
 		}		
 		
 		[Test]
 		public async Task HtmlHasTwoChildElements()
 		{
 			await Init ();
-			Assert.AreEqual(2, htmlChildElements.Count, 
-			                "Should be 2 child elements.");
+			Assert.AreEqual(2, htmlChildElements.Items.Length, "Should be 2 child elements.");
 		}
 		
 		[Test]
 		public async Task HtmlChildElementHead()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(htmlChildElements, "head"), 
-			              "Should have a child element called head.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(htmlChildElements, "head"), "Should have a child element called head.");
 		}
 		
 		[Test]
 		public async Task HtmlChildElementBody()
 		{
 			await Init ();
-			Assert.IsTrue(SchemaTestFixtureBase.Contains(htmlChildElements, "body"), 
-			              "Should have a child element called body.");
+			Assert.IsTrue(SchemaTestFixtureBase.Contains(htmlChildElements, "body"), "Should have a child element called body.");
 		}		
 		
 		protected override string GetSchema()

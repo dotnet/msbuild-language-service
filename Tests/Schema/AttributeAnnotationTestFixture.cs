@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MonoDevelop.Ide.CodeCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -13,8 +14,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 	[TestFixture]
 	public class AttributeAnnotationTestFixture : SchemaTestFixtureBase
 	{
-		CompletionDataList fooAttributeCompletionData;
-		CompletionDataList barAttributeCompletionData;
+		CompletionContext fooAttributeCompletionData;
+		CompletionContext barAttributeCompletionData;
 		
 		async Task Init ()
 		{
@@ -23,25 +24,26 @@ namespace MonoDevelop.Xml.Tests.Schema
 			
 			XmlElementPath path = new XmlElementPath();
 			path.Elements.Add(new QualifiedName("foo", "http://foo.com"));
-			
-			fooAttributeCompletionData = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			IAsyncCompletionSource source = DummyCompletionSource.Instance;
+
+			fooAttributeCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 
 			path.Elements.Add(new QualifiedName("bar", "http://foo.com"));
-			barAttributeCompletionData = await SchemaCompletionData.GetAttributeCompletionData(path, CancellationToken.None);
+			barAttributeCompletionData = await SchemaCompletionData.GetAttributeCompletionDataAsync (source, path, CancellationToken.None);
 		}
 				
 		[Test]
 		public async Task FooAttributeDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for foo attribute.", ((MonoDevelop.Ide.CodeCompletion.CompletionData)fooAttributeCompletionData[0]).Description);
+			Assert.AreEqual("Documentation for foo attribute.", await fooAttributeCompletionData.Items[0].GetDocumentationAsync ());
 		}
 		
 		[Test]
 		public async Task BarAttributeDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for bar attribute.", ((MonoDevelop.Ide.CodeCompletion.CompletionData)barAttributeCompletionData[0]).Description);
+			Assert.AreEqual("Documentation for bar attribute.", await barAttributeCompletionData.Items[0].GetDocumentationAsync ());
 		}
 		
 		protected override string GetSchema()
