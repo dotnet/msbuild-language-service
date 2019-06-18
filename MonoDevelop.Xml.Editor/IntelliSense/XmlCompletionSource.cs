@@ -38,7 +38,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 				case XmlCompletionTrigger.Attribute:
 					IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ?? spine.Nodes.Peek (1) as IAttributedXObject;
-					return await GetAttributeCompletionsAsync (nodePath, attributedOb, GetExistingAttributes (attributedOb), token);
+					return await GetAttributeCompletionsAsync (nodePath, attributedOb, GetExistingAttributes (spine, triggerLocation.Snapshot, attributedOb), token);
 
 				case XmlCompletionTrigger.AttributeValue:
 					if (spine.Nodes.Peek () is XAttribute att && spine.Nodes.Peek (1) is IAttributedXObject attributedObject) {
@@ -136,9 +136,30 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 			return new XName (snapshot.GetText (start, end - start));
 		}
 
-		//FIXME: include attributes ahead of the current position. 
-		static Dictionary<string, string> GetExistingAttributes (IAttributedXObject attributedOb)
+		static Dictionary<string, string> GetExistingAttributes (XmlParser spineParser, ITextSnapshot snapshot, IAttributedXObject attributedOb)
 		{
+			// clone parser to avoid modifying state
+			spineParser = (XmlParser) ((ICloneable)spineParser).Clone ();
+
+			// parse rest of element to get all attributes
+			for (int i = spineParser.Position; i < snapshot.Length; i++) {
+				spineParser.Push (snapshot[i]);
+
+				var currentState = spineParser.CurrentState;
+				switch (spineParser.CurrentState) {
+				case XmlAttributeState _:
+				case XmlAttributeValueState _:
+				case XmlTagState _:
+						continue;
+				case XmlNameState _:
+					if (currentState.Parent is XmlAttributeState) {
+						continue;
+					}
+					break;
+				}
+				break;
+			}
+
 			var existingAtts = new Dictionary<string, string> (StringComparer.OrdinalIgnoreCase);
 			foreach (XAttribute a in attributedOb.Attributes) {
 				existingAtts[a.Name.FullName] = a.Value ?? string.Empty;
