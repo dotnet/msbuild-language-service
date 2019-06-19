@@ -30,6 +30,8 @@ using System.Xml.Schema;
 using System.Xml;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Text.Adornments;
+using Microsoft.VisualStudio.Language.StandardClassification;
 
 namespace MonoDevelop.Xml.Completion
 {
@@ -43,7 +45,7 @@ namespace MonoDevelop.Xml.Completion
 		static AnnotationDocumentationProvider annotationProvider = new AnnotationDocumentationProvider ();
 		static StringXmlDocumentationProvider stringProvider = new StringXmlDocumentationProvider ();
 
-		public static void AddDocumentation (this CompletionItem item, ICompletionDocumentationProvider docsProvider)
+		public static void AddDocumentationProvider (this CompletionItem item, ICompletionDocumentationProvider docsProvider)
 		{
 			item.Properties.AddProperty (DocsKey, docsProvider);
 		}
@@ -72,7 +74,11 @@ namespace MonoDevelop.Xml.Completion
 		{
 			public Task<object> GetDocumentationAsync (CompletionItem item)
 			{
-				return Task.FromResult<object> (item.Properties.GetProperty<string> (this));
+				var desc = item.Properties.GetProperty<string> (this);
+				var content = new ClassifiedTextElement (
+					new ClassifiedTextRun (PredefinedClassificationTypeNames.NaturalLanguage, desc)
+				);
+				return Task.FromResult<object> (content);
 			}
 		}
 
@@ -94,13 +100,18 @@ namespace MonoDevelop.Xml.Completion
 					}
 				}
 
-				return Task.FromResult<object> (documentationBuilder.ToString ());
+				var desc = documentationBuilder.ToString ();
+				var content = new ClassifiedTextElement (
+					new ClassifiedTextRun (PredefinedClassificationTypeNames.NaturalLanguage, desc)
+				);
+
+				return Task.FromResult<object> (content);
 			}
 		}
 	}
 
 	/// <summary>
-	/// If an instance of this is attached to a <see cref="CompletionItem"/> instance using <see cref="CompletionItemDocumentationExtensions.AddDocumentation(CompletionItem, ICompletionDocumentationProvider)"/>,
+	/// If an instance of this is attached to a <see cref="CompletionItem"/> instance using <see cref="CompletionItemDocumentationExtensions.AddDocumentationProvider(CompletionItem, ICompletionDocumentationProvider)"/>,
 	/// the completion source will use it to lazily look up documentation.
 	/// </summary>
 	public interface ICompletionDocumentationProvider
