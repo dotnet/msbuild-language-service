@@ -1,3 +1,4 @@
+using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.MiniEditor;
 using Microsoft.VisualStudio.Text;
@@ -31,6 +32,9 @@ namespace MonoDevelop.Xml.Tests.Completion
 
 		public IAsyncCompletionBroker AsyncCompletionBroker
 			=> Host.GetService<IAsyncCompletionBroker> ();
+
+		public IAsyncQuickInfoBroker AsyncQuickInfoBroker
+			=> Host.GetService<IAsyncQuickInfoBroker> ();
 
 		public IClassifierAggregatorService ClassifierAggregatorService
 			=> Host.GetService<IClassifierAggregatorService> ();

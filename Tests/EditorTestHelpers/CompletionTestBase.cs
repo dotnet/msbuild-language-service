@@ -3,6 +3,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -51,6 +52,38 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 			);
 
 			return context.CompletionContext;
+		}
+
+		public Task<QuickInfoItemsCollection> GetQuickInfoItems (
+			string documentText,
+			char caretMarker = '$')
+		{
+			var caretOffset = documentText.IndexOf (caretMarker);
+			if (caretOffset < 0) {
+				throw new ArgumentException ("Document does not contain a caret marker", nameof (documentText));
+			}
+			documentText = documentText.Substring (0, caretOffset) + documentText.Substring (caretOffset + 1);
+
+			var textView = CreateTextView (documentText);
+			return GetQuickInfoItems (textView, caretOffset);
+
+		}
+
+		public async Task<QuickInfoItemsCollection> GetQuickInfoItems (
+			ITextView textView,
+			int caretPosition,
+			CancellationToken cancellationToken = default)
+		{
+			var broker = Catalog.AsyncQuickInfoBroker;
+			var snapshot = textView.TextBuffer.CurrentSnapshot;
+
+			var items = await broker.GetQuickInfoItemsAsync (
+				textView,
+				snapshot.CreateTrackingPoint (caretPosition, PointTrackingMode.Positive),
+				cancellationToken
+			);
+
+			return items;
 		}
 	}
 }
