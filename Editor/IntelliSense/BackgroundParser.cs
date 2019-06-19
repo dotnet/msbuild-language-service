@@ -41,7 +41,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 
 		void BufferChangedOnBackground (object sender, TextContentChangedEventArgs e)
 		{
-			currentOperation.Cancel ();
+			currentOperation?.Cancel ();
 			currentOperation = CreateParseOperation ((ITextSnapshot2)e.After);
 		}
 
@@ -101,7 +101,7 @@ namespace MonoDevelop.Xml.Editor.IntelliSense
 		public Task<T> GetOrParseAsync (ITextSnapshot2 snapshot, CancellationToken token)
 		{
 			var current = currentOperation;
-			if (current.Snapshot == snapshot && current.RegisterAdditionalCancellationOwner (token)) {
+			if (current != null && current.Snapshot == snapshot && current.RegisterAdditionalCancellationOwner (token)) {
 				return current.Task;
 			}
 
