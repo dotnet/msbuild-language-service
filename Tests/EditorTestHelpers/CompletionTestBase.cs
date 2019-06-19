@@ -77,6 +77,8 @@ namespace MonoDevelop.Xml.Tests.EditorTestHelpers
 			var broker = Catalog.AsyncQuickInfoBroker;
 			var snapshot = textView.TextBuffer.CurrentSnapshot;
 
+			await Catalog.JoinableTaskContext.Factory.SwitchToMainThreadAsync();
+
 			var items = await broker.GetQuickInfoItemsAsync (
 				textView,
 				snapshot.CreateTrackingPoint (caretPosition, PointTrackingMode.Positive),

@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
+using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 
 namespace MonoDevelop.Xml.Tests.Completion
@@ -44,5 +45,8 @@ namespace MonoDevelop.Xml.Tests.Completion
 
 		public IBufferTagAggregatorFactoryService BufferTagAggregatorFactoryService
 			=> Host.GetService<IBufferTagAggregatorFactoryService> ();
+
+		public JoinableTaskContext JoinableTaskContext
+			=> Host.GetService<JoinableTaskContext> ();
 	}
 }
