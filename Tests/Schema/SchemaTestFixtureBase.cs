@@ -1,8 +1,10 @@
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using Microsoft.VisualStudio.Text.Adornments;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MonoDevelop.Xml.Tests.Schema
@@ -72,7 +74,8 @@ namespace MonoDevelop.Xml.Tests.Schema
 			
 			foreach (var data in items.Items) {
 				if (data.DisplayText == name) {
-					if ((await data.GetDocumentationAsync () as string) == description) {
+					var descEl = await data.GetDocumentationAsync () as ClassifiedTextElement;
+					if (descEl != null && descEl.Runs.FirstOrDefault()?.Text == description) {
 						Contains = true;
 						break;						
 					}
@@ -116,6 +119,12 @@ namespace MonoDevelop.Xml.Tests.Schema
 		{
 			StringReader reader = new StringReader(GetSchema());
 			return new XmlSchemaCompletionProvider(reader);
+		}
+
+		protected async Task AssertDescription(string expected, CompletionItem item)
+        {
+			var description = (ClassifiedTextElement) await item.GetDocumentationAsync ();
+			Assert.AreEqual (expected, description.Runs.First ().Text);
 		}
 	}
 }

@@ -33,14 +33,14 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task RootElementDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for foo element.", await rootElementCompletionData.Items[0].GetDocumentationAsync ());
+			await AssertDescription ("Documentation for foo element.", rootElementCompletionData.Items[0]);
 		}
 		
 		[Test]
 		public async Task FooChildElementDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for bar element.", await fooChildElementCompletionData.Items[0].GetDocumentationAsync ());
+			await AssertDescription ("Documentation for bar element.", fooChildElementCompletionData.Items[0]);
 		}
 		
 		protected override string GetSchema()

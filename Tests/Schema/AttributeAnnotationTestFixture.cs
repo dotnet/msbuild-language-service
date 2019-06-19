@@ -1,7 +1,9 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
+using Microsoft.VisualStudio.Text.Adornments;
 using MonoDevelop.Xml.Completion;
 using NUnit.Framework;
 
@@ -36,16 +38,16 @@ namespace MonoDevelop.Xml.Tests.Schema
 		public async Task FooAttributeDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for foo attribute.", await fooAttributeCompletionData.Items[0].GetDocumentationAsync ());
+			await AssertDescription("Documentation for foo attribute.", fooAttributeCompletionData.Items[0]);
 		}
 		
 		[Test]
 		public async Task BarAttributeDocumentation()
 		{
 			await Init ();
-			Assert.AreEqual("Documentation for bar attribute.", await barAttributeCompletionData.Items[0].GetDocumentationAsync ());
+			await AssertDescription("Documentation for bar attribute.", barAttributeCompletionData.Items[0]);
 		}
-		
+
 		protected override string GetSchema()
 		{
 			return "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://foo.com\" xmlns=\"http://foo.com\" elementFormDefault=\"qualified\">\r\n" +
