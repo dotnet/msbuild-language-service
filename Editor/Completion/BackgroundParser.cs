@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
 
-namespace MonoDevelop.Xml.Editor.IntelliSense
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	public abstract partial class BackgroundParser<T> : IDisposable where T : class
 	{

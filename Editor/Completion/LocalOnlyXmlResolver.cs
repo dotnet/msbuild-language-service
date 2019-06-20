@@ -26,7 +26,7 @@
 using System;
 using System.Xml;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	public class LocalOnlyXmlResolver : XmlUrlResolver
 	{

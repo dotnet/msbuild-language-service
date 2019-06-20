@@ -23,10 +23,9 @@
 
 using System.Collections.Generic;
 using System.Text;
-using MonoDevelop.Xml.Completion;
 using MonoDevelop.Xml.Dom;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	/// <summary>
 	/// Represents the path to an xml element starting from the root of the

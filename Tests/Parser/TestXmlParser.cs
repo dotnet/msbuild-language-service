@@ -30,7 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 using NUnit.Framework;

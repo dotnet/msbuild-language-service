@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
-using MonoDevelop.Xml.Editor.IntelliSense;
+using MonoDevelop.Xml.Editor.Completion;
 
 namespace MonoDevelop.Xml.Tests.Schema
 {

@@ -33,7 +33,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Language.StandardClassification;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	/// <summary>
 	/// Helpers for attaching documentation to <see cref="CompletionItem"/> instances.

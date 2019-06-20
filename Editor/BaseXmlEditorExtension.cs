@@ -1,4 +1,4 @@
-﻿// 
+// 
 // BaseXmlEditorExtension.cs
 // 
 // Author:
@@ -45,7 +45,7 @@ using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Ide.Editor;
 using MonoDevelop.Ide.Editor.Extension;
 using MonoDevelop.Projects;
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 using System.Threading.Tasks;

@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.Text;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 
-namespace MonoDevelop.Xml.Editor.IntelliSense
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	class XmlCompletionTriggering
 	{

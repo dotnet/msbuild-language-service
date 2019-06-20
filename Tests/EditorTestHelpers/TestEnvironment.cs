@@ -4,7 +4,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using Microsoft.VisualStudio.MiniEditor;
 using Microsoft.VisualStudio.Threading;
-using MonoDevelop.Xml.Editor.IntelliSense;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Parser;
 using MonoDevelop.Xml.Tests.Completion;
 

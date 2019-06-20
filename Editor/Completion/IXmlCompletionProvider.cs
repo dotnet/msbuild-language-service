@@ -32,7 +32,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	interface IXmlCompletionProvider
 	{

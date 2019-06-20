@@ -1,4 +1,4 @@
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using NUnit.Framework;
 using System.IO;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;

@@ -1,5 +1,5 @@
 using System.Threading;
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;

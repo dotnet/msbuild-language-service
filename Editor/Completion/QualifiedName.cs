@@ -24,7 +24,7 @@
 using System;
 using System.Xml;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	/// <summary>
 	/// An <see cref="XmlQualifiedName"/> with the namespace prefix.

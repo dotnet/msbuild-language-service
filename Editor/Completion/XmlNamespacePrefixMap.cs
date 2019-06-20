@@ -26,7 +26,7 @@
 
 using System.Collections.Generic;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	class XmlNamespacePrefixMap
 	{

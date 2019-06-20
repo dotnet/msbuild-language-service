@@ -1,4 +1,4 @@
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using System;
 using System.IO;
 using System.Text;

@@ -37,7 +37,7 @@ using System.Xml.Schema;
 
 using Microsoft.CodeAnalysis.Completion;
 
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 

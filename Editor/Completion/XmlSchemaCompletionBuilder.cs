@@ -34,7 +34,7 @@ using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using MonoDevelop.Xml.Editor.Completion;
 using System.Collections.Immutable;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	class XmlSchemaCompletionBuilder
 	{

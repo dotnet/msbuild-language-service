@@ -30,9 +30,9 @@ using System.Xml;
 using System.Xml.Schema;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
-using MonoDevelop.Xml.Editor.IntelliSense;
+using MonoDevelop.Xml.Editor.Completion;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	/// <summary>
 	/// Holds the completion (intellisense) data for an xml schema.

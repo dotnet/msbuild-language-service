@@ -25,7 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	interface IXmlSchemaCompletionDataCollection: IEnumerable<XmlSchemaCompletionProvider>
 	{

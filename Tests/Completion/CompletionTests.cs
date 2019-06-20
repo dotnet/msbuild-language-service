@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Editor;
-using MonoDevelop.Xml.Editor.IntelliSense;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Tests.EditorTestHelpers;
 using NUnit.Framework;
 

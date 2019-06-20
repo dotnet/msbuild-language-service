@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.IO;
-using MonoDevelop.Xml.Editor.IntelliSense;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Parser;
 using NUnit.Framework;
 using NUnit.Framework.Internal;

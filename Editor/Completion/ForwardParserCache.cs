@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.Text;
 using MonoDevelop.Xml.Parser;
 
 // taken from MonoDevelop.Ide.Gui.Content and ported to VS editor
-namespace MonoDevelop.Xml.Editor
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	class ForwardParserCache<T> : IDisposable where T : IForwardParser
 	{

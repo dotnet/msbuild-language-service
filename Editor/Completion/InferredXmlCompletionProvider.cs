@@ -33,7 +33,7 @@ using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using MonoDevelop.Xml.Dom;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	class InferredXmlCompletionProvider : IXmlCompletionProvider
 	{

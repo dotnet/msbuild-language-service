@@ -26,7 +26,7 @@
 
 using System;
 
-namespace MonoDevelop.Xml.Completion
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	interface IXmlSchemaService
 	{

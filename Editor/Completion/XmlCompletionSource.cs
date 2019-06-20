@@ -6,15 +6,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using MonoDevelop.Xml.Completion;
+
 using MonoDevelop.Xml.Dom;
 using MonoDevelop.Xml.Parser;
 
-namespace MonoDevelop.Xml.Editor.IntelliSense
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	public abstract class XmlCompletionSource<TParser, TResult> : IAsyncCompletionSource where TResult : XmlParseResult where TParser : XmlBackgroundParser<TResult>, new()
 	{

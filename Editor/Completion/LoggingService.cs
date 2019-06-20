@@ -3,7 +3,7 @@
 
 using System;
 
-namespace MonoDevelop.Xml.Editor.IntelliSense
+namespace MonoDevelop.Xml.Editor.Completion
 {
 	//FIXME: replace this MD shim with something better
 	internal class LoggingService

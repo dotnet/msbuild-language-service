@@ -1,5 +1,5 @@
 using System;
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using MonoDevelop.Xml.Parser;
 using NUnit.Framework;
 

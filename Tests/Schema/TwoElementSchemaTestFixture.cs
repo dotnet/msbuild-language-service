@@ -1,4 +1,4 @@
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using System.Threading;

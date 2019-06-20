@@ -1,4 +1,4 @@
-using MonoDevelop.Xml.Completion;
+using MonoDevelop.Xml.Editor.Completion;
 using NUnit.Framework;
 using MonoDevelop.Xml.Tests.Utils;
 using MonoDevelop.Xml.Tests.Schema;
