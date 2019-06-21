@@ -43,6 +43,7 @@ namespace MonoDevelop.Xml.Tests.Completion
 		}
 
 		protected override Task<CompletionContext> GetElementCompletionsAsync (
+			IAsyncCompletionSession session,
 			SnapshotPoint triggerLocation,
 			List<XObject> nodePath,
 			bool includeBracket,

@@ -48,25 +48,25 @@ namespace MonoDevelop.Xml.Editor.Completion
 					//TODO: if it's on the first or second line and there's no DTD declaration, add the DTDs, or at least <!DOCTYPE
 					//TODO: add closing tags // AddCloseTag (list, spine.Nodes);
 					//TODO: add snippets // MonoDevelop.Ide.CodeTemplates.CodeTemplateService.AddCompletionDataForFileName (DocumentContext.Name, list);
-					return await GetElementCompletionsAsync (triggerLocation, nodePath, triggerResult.kind == XmlCompletionTrigger.ElementWithBracket, token);
+					return await GetElementCompletionsAsync (session, triggerLocation, nodePath, triggerResult.kind == XmlCompletionTrigger.ElementWithBracket, token);
 
 				case XmlCompletionTrigger.Attribute:
 					IAttributedXObject attributedOb = (spine.Nodes.Peek () as IAttributedXObject) ?? spine.Nodes.Peek (1) as IAttributedXObject;
-					return await GetAttributeCompletionsAsync (triggerLocation, nodePath, attributedOb, GetExistingAttributes (spine, triggerLocation.Snapshot, attributedOb), token);
+					return await GetAttributeCompletionsAsync (session, triggerLocation, nodePath, attributedOb, GetExistingAttributes (spine, triggerLocation.Snapshot, attributedOb), token);
 
 				case XmlCompletionTrigger.AttributeValue:
 					if (spine.Nodes.Peek () is XAttribute att && spine.Nodes.Peek (1) is IAttributedXObject attributedObject) {
-						return await GetAttributeValueCompletionsAsync (triggerLocation, nodePath, attributedObject, att, token);
+						return await GetAttributeValueCompletionsAsync (session, triggerLocation, nodePath, attributedObject, att, token);
 					}
 					break;
 
 				case XmlCompletionTrigger.Entity:
-					return await GetEntityCompletionsAsync (triggerLocation, nodePath, token);
+					return await GetEntityCompletionsAsync (session, triggerLocation, nodePath, token);
 
 				case XmlCompletionTrigger.DocType:
 				case XmlCompletionTrigger.DocTypeOrCData:
 					// we delegate adding the CDATA completion to the subclass as only it knows whether character data is valid in that position
-					return await GetDocTypeCompletionsAsync (triggerLocation, nodePath, triggerResult.kind == XmlCompletionTrigger.DocTypeOrCData, token);
+					return await GetDocTypeCompletionsAsync (session, triggerLocation, nodePath, triggerResult.kind == XmlCompletionTrigger.DocTypeOrCData, token);
 				}
 			}
 
@@ -78,7 +78,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 			CompletionItem item,
 			CancellationToken token)
 		{
-			return item.GetDocumentationAsync ();
+			return item.GetDocumentationAsync (session, token);
 		}
 
 		public CompletionStartData InitializeCompletion (CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
@@ -102,6 +102,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 		}
 
 		protected virtual Task<CompletionContext> GetElementCompletionsAsync (
+			IAsyncCompletionSession session,
 			SnapshotPoint triggerLocation,
 			List<XObject> nodePath,
 			bool includeBracket,
@@ -110,6 +111,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 			=> Task.FromResult (CompletionContext.Empty);
 
 		protected virtual Task<CompletionContext> GetAttributeCompletionsAsync (
+			IAsyncCompletionSession session,
 			SnapshotPoint triggerLocation,
 			List<XObject> nodePath,
 			IAttributedXObject attributedObject,
@@ -119,6 +121,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 			=> Task.FromResult (CompletionContext.Empty);
 
 		protected virtual Task<CompletionContext> GetAttributeValueCompletionsAsync (
+			IAsyncCompletionSession session,
 			SnapshotPoint triggerLocation,
 			List<XObject> nodePath,
 			IAttributedXObject attributedObject,
@@ -128,6 +131,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 			=> Task.FromResult (CompletionContext.Empty);
 
 		protected virtual Task<CompletionContext> GetEntityCompletionsAsync (
+			IAsyncCompletionSession session,
 			SnapshotPoint triggerLocation,
 			List<XObject> nodePath,
 			CancellationToken token
@@ -135,6 +139,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 			=> Task.FromResult (CompletionContext.Empty);
 
 		protected virtual Task<CompletionContext> GetDocTypeCompletionsAsync (
+			IAsyncCompletionSession session,
 			SnapshotPoint triggerLocation,
 			List<XObject> nodePath,
 			bool includeCData,

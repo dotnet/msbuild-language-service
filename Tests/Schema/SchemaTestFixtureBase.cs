@@ -74,7 +74,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 			
 			foreach (var data in items.Items) {
 				if (data.DisplayText == name) {
-					var descEl = await data.GetDocumentationAsync () as ClassifiedTextElement;
+					var descEl = await data.GetDocumentationAsync (null, default) as ClassifiedTextElement;
 					if (descEl != null && descEl.Runs.FirstOrDefault()?.Text == description) {
 						Contains = true;
 						break;						
@@ -123,7 +123,7 @@ namespace MonoDevelop.Xml.Tests.Schema
 
 		protected async Task AssertDescription(string expected, CompletionItem item)
         {
-			var description = (ClassifiedTextElement) await item.GetDocumentationAsync ();
+			var description = (ClassifiedTextElement) await item.GetDocumentationAsync (null, default);
 			Assert.AreEqual (expected, description.Runs.First ().Text);
 		}
 	}

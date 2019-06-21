@@ -32,6 +32,8 @@ using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion.Data;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Language.StandardClassification;
+using System.Threading;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 
 namespace MonoDevelop.Xml.Editor.Completion
 {
@@ -42,8 +44,8 @@ namespace MonoDevelop.Xml.Editor.Completion
 	{
 		static readonly Type DocsKey = typeof (ICompletionDocumentationProvider);
 
-		static AnnotationDocumentationProvider annotationProvider = new AnnotationDocumentationProvider ();
-		static StringXmlDocumentationProvider stringProvider = new StringXmlDocumentationProvider ();
+		static readonly AnnotationDocumentationProvider annotationProvider = new AnnotationDocumentationProvider ();
+		static readonly StringXmlDocumentationProvider stringProvider = new StringXmlDocumentationProvider ();
 
 		public static void AddDocumentationProvider (this CompletionItem item, ICompletionDocumentationProvider docsProvider)
 		{
@@ -62,17 +64,17 @@ namespace MonoDevelop.Xml.Editor.Completion
 			item.Properties.AddProperty (annotationProvider, annotation);
 		}
 
-		public static Task<object> GetDocumentationAsync (this CompletionItem item)
+		public static Task<object> GetDocumentationAsync (this CompletionItem item, IAsyncCompletionSession session, CancellationToken token)
 		{
 			if (item.Properties.TryGetProperty<ICompletionDocumentationProvider> (DocsKey, out var provider)) {
-				return provider.GetDocumentationAsync (item);
+				return provider.GetDocumentationAsync (session, item, token);
 			}
 			return null;
 		}
 
 		class StringXmlDocumentationProvider : ICompletionDocumentationProvider
 		{
-			public Task<object> GetDocumentationAsync (CompletionItem item)
+			public Task<object> GetDocumentationAsync (IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
 			{
 				var desc = item.Properties.GetProperty<string> (this);
 				var content = new ClassifiedTextElement (
@@ -84,7 +86,7 @@ namespace MonoDevelop.Xml.Editor.Completion
 
 		class AnnotationDocumentationProvider : ICompletionDocumentationProvider
 		{
-			public Task<object> GetDocumentationAsync (CompletionItem item)
+			public Task<object> GetDocumentationAsync (IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
 			{
 				var annotation = item.Properties.GetProperty<XmlSchemaAnnotation> (this);
 
@@ -116,6 +118,6 @@ namespace MonoDevelop.Xml.Editor.Completion
 	/// </summary>
 	public interface ICompletionDocumentationProvider
 	{
-		Task<object> GetDocumentationAsync (CompletionItem item);
+		Task<object> GetDocumentationAsync (IAsyncCompletionSession session, CompletionItem item, CancellationToken token);
 	}
 }
