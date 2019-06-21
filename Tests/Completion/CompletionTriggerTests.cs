@@ -22,7 +22,6 @@ namespace MonoDevelop.Xml.Tests.Completion
 		[TestCase ("", '<', XmlCompletionTrigger.ElementWithBracket)]
 		[TestCase ("", 'a', XmlCompletionTrigger.None)]
 		[TestCase("\"", '"', XmlCompletionTrigger.None)]
-		[TestCase("<", XmlCompletionTrigger.Element)]
 		[TestCase("<foo", '"', XmlCompletionTrigger.None)]
 		[TestCase ("<foo", ' ', XmlCompletionTrigger.Attribute)]
 		[TestCase ("<foo bar='1'   ", ' ', XmlCompletionTrigger.Attribute)]
