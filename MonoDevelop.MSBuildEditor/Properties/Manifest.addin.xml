@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionModel>
+	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
+		<Class id = "EnhancedMSBuildTextEditorExtension"
+		       class = "MonoDevelop.MSBuildEditor.MSBuildTextEditorExtension"
+		       mimeTypes ="application/x-msbuild"
+		       insertbefore="MSBuildTextEditorExtension" />
+        <Class id = "MSBuildNavigationExtension"
+               class = "MonoDevelop.MSBuildEditor.MSBuildNavigationExtension"
+               mimeTypes ="application/x-msbuild" />
+        <Class id = "MSBuildNavigationExtension"
+               class = "MonoDevelop.MSBuildEditor.MSBuildHighlightUsagesExtension"
+               mimeTypes ="application/x-msbuild" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Core/MimeTypes">
+		<!--
+		We can't extend the existing mimetype, so re-define it.
+		This particular system will use the first thing defined, so insert it way up the list.
+		-->
+		<MimeType id="application/x-msbuild" _description="MSBuild file" baseType="application/xml" insertbefore="application/xml">
+            <File pattern="*.targets" />
+            <File pattern="*.props" />
+            <File pattern="*.tasks" />
+            <File pattern="*.overridetasks" />
+			<File pattern="*.csproj" />
+			<File pattern="*.fsproj" />
+			<File pattern="*.vbproj" />
+			<File pattern="*.xproj" />
+            <File pattern="*.proj" />
+            <File pattern="*.csproj.user" />
+            <File pattern="*.fsproj.user" />
+			<File pattern="*.vbproj.user" />
+		</MimeType>
+	</Extension>
+
+    <Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
+        <Policies resource="MSBuildStylePolicy.xml" />
+    </Extension>
+
+    <Extension path = "/MonoDevelop/ProjectModel/PolicySets/Default" >
+        <Policies resource="MSBuildStylePolicy.xml" />
+    </Extension>
+
+	<Extension path = "/MonoDevelop/TypeSystem/Parser">
+		<Parser
+			class = "MonoDevelop.MSBuildEditor.MSBuildDocumentParser"
+			mimeType = "application/x-msbuild"
+			id = "MSBuildDocumentParser"
+			insertbefore="MSBuildParser" />
+ 	</Extension>
+
+	<Extension path = "/MonoDevelop/Ide/FileTemplates">
+		<FileTemplate
+			id = "MSBuildProject"
+			file = "Templates/Project.xft.xml" />
+	</Extension>
+
+    <Extension path = "/MonoDevelop/Ide/Commands/Refactoring">
+        <Command id = "MonoDevelop.MSBuildEditor.MSBuildCommands.NavigationOperations"
+            defaultHandler = "MonoDevelop.MSBuildEditor.MSBuildNavigationOperationsCommandHandler"
+            type="array"
+            _label="Navigation" />
+    </Extension>
+
+    <Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
+        <Condition id="FileType" mimeTypes="application/x-msbuild">
+            <CommandItem
+                id = "MonoDevelop.MSBuildEditor.MSBuildCommands.NavigationOperations"
+                insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"
+                insertbefore="MonoDevelop.Debugger.DebugCommands.ExpressionEvaluator" />
+        </Condition>
+    </Extension>
+
+    <Extension path = "/MonoDevelop/Ide/Editor/TooltipProviders">
+        <Provider id="MSBuild" class="MonoDevelop.MSBuildEditor.MSBuildTooltipProvider" mimeType="application/x-msbuild" />
+    </Extension>
+
+    <Extension path="/MonoDevelop/Ide/Editor/Bundles">
+        <Bundle resource = "MonoDevelop.MSBuildEditor.Syntax.msbuild.json" />
+    </Extension>
+
+	<Extension path="/MonoDevelop/Ide/Commands/TextEditor">
+        <Command id = "MonoDevelop.MSBuildEditor.MSBuildCommands.ToggleShowPrivateSymbols"
+                _label = "Show/Hide Private MSBuild Symbols"
+                _description="Toggles whether private MSBuild symbols are shown in IntelliSense"
+                defaultHandler = "MonoDevelop.MSBuildEditor.ToggleShowPrivateSymbolsHandler" />
+    </Extension>
+
+    <Extension path="/MonoDevelop/Ide/Pads">
+        <Pad class="MonoDevelop.MSBuildEditor.Pads.MSBuildImportNavigatorPad" _label="MSBuild Imports" defaultPlacement="right" />
+    </Extension>
+</ExtensionModel>

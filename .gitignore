@@ -1,0 +1,8 @@
+*.userprefs
+bin
+obj
+packages
+*.suo
+.DS_Store
+.vs
+*.user
