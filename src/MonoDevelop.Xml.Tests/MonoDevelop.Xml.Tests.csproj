@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Editor\MonoDevelop.Xml.Editor.csproj" />
-    <ProjectReference Include="..\Xml\MonoDevelop.Xml.csproj" />
+    <ProjectReference Include="..\MonoDevelop.Xml.Editor\MonoDevelop.Xml.Editor.csproj" />
+    <ProjectReference Include="..\MonoDevelop.Xml\MonoDevelop.Xml.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="ExpandSelectionTests.cs" />
