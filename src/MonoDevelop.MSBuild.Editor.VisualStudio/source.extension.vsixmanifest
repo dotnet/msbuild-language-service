@@ -6,7 +6,7 @@
         <Description xml:space="preserve">MSBuild Editor</Description>
         <Preview>true</Preview>
     </Metadata>
-    <Installation>
+    <Installation Experimental="true">
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.1, 17.0)" />
     </Installation>
     <Dependencies>
