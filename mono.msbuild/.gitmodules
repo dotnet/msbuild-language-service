@@ -1,6 +1,0 @@
-[submodule "external/ProjFileTools"]
-	path = mono.msbuild/ProjFileTools
-	url = https://github.com/dotnet/ProjFileTools.git
-[submodule "MonoDevelop.Xml"]
-	path = mono.msbuild/MonoDevelop.Xml
-	url = https://github.com/mhutch/MonoDevelop.Xml.git
