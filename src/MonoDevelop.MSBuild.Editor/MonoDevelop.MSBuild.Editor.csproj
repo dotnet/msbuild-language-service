@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="MonoDevelop.MSBuild.Tests" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\MonoDevelop.Xml\MonoDevelop.Xml.csproj" />
     <ProjectReference Include="..\MonoDevelop.Xml.Editor\MonoDevelop.Xml.Editor.csproj" />
     <ProjectReference Include="..\MonoDevelop.MSBuild\MonoDevelop.MSBuild.csproj" />

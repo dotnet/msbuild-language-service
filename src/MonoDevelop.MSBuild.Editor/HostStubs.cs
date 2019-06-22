@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using MonoDevelop.MSBuild.Language;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo ("MonoDevelop.MSBuild.Tests")]
-
 namespace MonoDevelop.MSBuild
 {
 	static class Ambience

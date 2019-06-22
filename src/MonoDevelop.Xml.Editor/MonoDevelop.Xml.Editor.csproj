@@ -24,8 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="MonoDevelop.Xml.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MonoDevelop.Xml\MonoDevelop.Xml.csproj" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="16.0.428" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="16.1.89" />
     <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="16.1.89" />
   </ItemGroup>
 

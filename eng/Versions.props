@@ -3,5 +3,16 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
+    <UsingToolVSSDK>true</UsingToolVSSDK>
+    
+    <!-- Opt-out repo features -->
+    <UsingToolXliff>false</UsingToolXliff>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+    </RestoreSources>
   </PropertyGroup>
 </Project>

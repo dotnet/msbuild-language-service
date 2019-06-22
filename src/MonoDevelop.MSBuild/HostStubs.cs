@@ -6,9 +6,6 @@ using MonoDevelop.MSBuild.Evaluation;
 using MonoDevelop.MSBuild.Language;
 using MonoDevelop.MSBuild.Schema;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo ("MonoDevelop.MSBuild.Tests")]
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo ("MonoDevelop.MSBuild.Editor")]
-
 namespace MonoDevelop.MSBuild
 {
 	static class LoggingService
