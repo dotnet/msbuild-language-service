@@ -12,6 +12,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <VisualStudioInsertionComponent>MonoDevelop.MSBuild.Editor.VisualStudio</VisualStudioInsertionComponent>
+    <Ngen>false</Ngen>
+  
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\MSBuildLanguageService</ExtensionInstallationFolder>
 

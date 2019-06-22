@@ -3,7 +3,10 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
     <PreReleaseVersionLabel>prerelease</PreReleaseVersionLabel>
+
+    <!-- Opt-in repo features -->
     <UsingToolVSSDK>true</UsingToolVSSDK>
+    <UsingToolSymbolUploader>true</UsingToolSymbolUploader>
     
     <!-- Opt-out repo features -->
     <UsingToolXliff>false</UsingToolXliff>
@@ -12,7 +15,9 @@
   <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
-      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
+      https://api.nuget.org/v3/index.json
     </RestoreSources>
   </PropertyGroup>
 </Project>
