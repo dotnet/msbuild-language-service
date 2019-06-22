@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
+    <NUnitDisableSupportAssemblies>true</NUnitDisableSupportAssemblies>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Editor\MonoDevelop.Xml.Editor.csproj" />
+    <ProjectReference Include="..\Xml\MonoDevelop.Xml.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="ExpandSelectionTests.cs" />
+    <Compile Remove="Schema\SchemaAssociationTests.cs" />
+    <Compile Remove="Schema\XmlSchemaNamespaceTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Schema\xhtml1-strict.xsd" />
+    <None Remove="Schema\XMLSchema.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Schema\xhtml1-strict.xsd" LogicalName="xhtml1-strict.xsd" />
+    <EmbeddedResource Include="Schema\XMLSchema.xsd" LogicalName="XMLSchema.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ExpandSelectionTests.cs" />
+    <None Include="Schema\SchemaAssociationTests.cs" />
+    <None Include="Schema\XmlSchemaNamespaceTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Neteril.VisualStudio.MiniEditor" Version="1.0.11" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+  </ItemGroup>
+</Project>

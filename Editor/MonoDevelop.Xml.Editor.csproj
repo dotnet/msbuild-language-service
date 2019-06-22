@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="BaseXmlEditorExtension.cs" />
+    <Compile Remove="XmlDocumentParser.cs" />
+    <Compile Remove="XmlEditorOptions.cs" />
+    <Compile Remove="XmlExpandSelectionHandler.cs" />
+    <Compile Remove="XmlParsedDocument.cs" />
+    <Compile Remove="XmlTextEditorExtension.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="BaseXmlEditorExtension.cs" />
+    <None Include="XmlDocumentParser.cs" />
+    <None Include="XmlEditorOptions.cs" />
+    <None Include="XmlExpandSelectionHandler.cs" />
+    <None Include="XmlParsedDocument.cs" />
+    <None Include="XmlTextEditorExtension.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xml\MonoDevelop.Xml.csproj" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="16.0.428" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="16.1.89" />
+  </ItemGroup>
+
+</Project>
