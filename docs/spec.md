@@ -4,14 +4,14 @@
 
 Initial Project Specification
 
-- [MSBuild Language Service](#msbuild-language-service)
+- [MSBuild Language Service](#MSBuild-language-service)
   - [Overview](#overview)
     - [Elevator Pitch](#elevator-pitch)
     - [Customers](#customers)
     - [Problem Statement](#problem-statement)
     - [Existing Solutions or Expectations](#existing-solutions-or-expectations)
       - [Migrators](#migrators)
-      - [MSBuild language services](#msbuild-language-services)
+      - [MSBuild language services](#MSBuild-language-services)
     - [Goals](#goals)
   - [Requirements](#requirements)
     - [Terminology](#terminology)
@@ -46,7 +46,7 @@ Initial Project Specification
     - [Test Approach](#test-approach)
       - [unit tests](#unit-tests)
       - [functional tests](#functional-tests)
-      - [integration tests](#integration-tests)
+      - [Integration tests](#Integration-tests)
     - [Test Design](#test-design)
       - [Technology Decisions](#technology-decisions-1)
       - [Architectural Overview](#architectural-overview)
@@ -63,16 +63,16 @@ Most .NET users today use the Visual Studio IDE with smaller numbers using Visua
 
 ### Problem Statement
 
-MSBuild is a turing-complete build specification language used for all if .NET. Traditionally, the lack of tooling has made working with it difficult for most users to make changes to how their projects build. .NET core introduced a more terse syntax for specifying how projects build while removing most boilerplate statements. This new sdk-style format is highly sought after by developers of both open and closed source software, but there is no definitive way to migrate to it other than modifying large sets of msbuild files. With the advent of .NET Core, the success of people migrating to this new platform depends on their ability to successfully modify existing projects.
+MSBuild is a turing-complete build specification language used for all if .NET. Traditionally, the lack of tooling has made working with it difficult for most users to make changes to how their projects build. .NET core introduced a more terse syntax for specifying how projects build while removing most boilerplate statements. This new sdk-style format is highly sought after by developers of both open and closed source software, but there is no definitive way to migrate to it other than modifying large sets of MSBuild files. With the advent of .NET Core, the success of people migrating to this new platform depends on their ability to successfully modify existing projects.
 
 ### Existing Solutions or Expectations
 
-There exist several tools that attempt to change the format of msbuild project or provide tooling for them.
+There exist several tools that attempt to change the format of MSBuild projects or provide tooling for them.
 
 #### Migrators
 
 - [CsprojToVs2017](https://github.com/hvanbakel/CsprojToVs2017) attempts to migrate your project to the new format using text transformations
-- [ProjectSimplifier](https://github.com/srivatsn/ProjectSimplifier) attempts to use the msbuild evaluation model to move projects to the new format
+- [ProjectSimplifier](https://github.com/srivatsn/ProjectSimplifier) attempts to use the MSBuild evaluation model to move projects to the new format
 
 #### MSBuild language services
 
@@ -83,11 +83,11 @@ There exist several tools that attempt to change the format of msbuild project o
   - go to definition on properties and items
 
 - [MonoDevelop.MSBuildEditor](https://github.com/mhutch/MonoDevelop.MSBuildEditor/tree/library) A VS4Mac add in that provides:
-  - completion for all msbuild constructs
-  - quickinfo for all common msbuild constructs
+  - completion for all MSBuild constructs
+  - quickinfo for all common MSBuild constructs
   - completion for package references
 
-- [MSBuild project file tools](https://github.com/tintoy/msbuild-project-tools-vscode) A VS Code extension that provides:
+- [MSBuild project file tools](https://github.com/tintoy/MSBuild-project-tools-vscode) A VS Code extension that provides:
   - completion for package references
   - quickinfo for common elements
   - snippets for common tasks
@@ -103,32 +103,32 @@ There exist several tools that attempt to change the format of msbuild project o
 
 | Term                     | Definition                                                                                                                                                                                                       |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| .NET Core                | A Cross platform runtime that can be used on linux, macOS, or windows                                                                                                                                            |
+| .NET Core                | A Cross platform runtime that can be used on Linux, macOS, or Windows                                                                                                                                            |
 | .NET Core SDK            | A set of tools needed to build .NET Core projects                                                                                                                                                                |
-| .NET Framework           | A windows only language runtime                                                                                                                                                                                  |
+| .NET Framework           | A Windows only language runtime                                                                                                                                                                                  |
 | arcade                   | A set of common tasks and targets used to build projects in github.com/dotnet, lives [here](http://github.com/dotnet/arcade)                                                                                     |
 | Completion               | The common name for suggesting things that could be typed in the current context in an IDE. More info [here](https://docs.microsoft.com/en-us/visualstudio/ide/using-intellisense?view=vs-2015#complete-word)    |
-| csproj                   | The file and exension and therefore common name used to refer to project files for the C# programming language                                                                                                   |
+| csproj                   | The file and extension and therefore common name used to refer to project files for the C# programming language                                                                                                   |
 | Design-Time Build        | A special build that a code editor starts in MSBuild to calculate the command line options for a compilation.  more info [here](https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md) |
 | Expressions              | A series of statements that results in a new value. See [here](https://en.wikipedia.org/wiki/Expression_(computer_science))                                                                                      |
-| fsproj                   | The file and exension and therefore common name used to refer to project files for the F# programming language                                                                                                   |
-| Go to definition         | see [here](https://docs.microsoft.com/en-us/visualstudio/ide/go-to-and-peek-definition?view=vs-2019)                                                                                                             |
-| Items                    | Imputs into a build system, typically files. See [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-items?view=vs-2019)                                                                        |
+| fsproj                   | The file and extension and therefore common name used to refer to project files for the F# programming language                                                                                                   |
+| Go to definition         | See [here](https://docs.microsoft.com/en-us/visualstudio/ide/go-to-and-peek-definition?view=vs-2019)                                                                                                             |
+| Items                    | Inputs into a build system, typically files. See [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-items?view=vs-2019)                                                                        |
 | Language Server Protocol | This protocol defines the format of messages sent using JSON-RPC between the development tool and the language servers. more info [here](https://microsoft.github.io/language-server-protocol/)                  |
 | MSBuild                  | A build engine used in .NET (info [here](https://en.wikipedia.org/wiki/MSBuild))                                                                                                                                 |
-| MSBuild Language Service | A term refering the the project in this repo                                                                                                                                                                     |
-| nuget                    | A technology to resolve binary packages for .NET                                                                                                                                                                 |
+| MSBuild Language Service | A term refering to the project in this repo                                                                                                                                                                     |
+| Nuget                    | A technology to resolve binary packages for .NET                                                                                                                                                                 |
 | nuget.org                | A service to host binary packages                                                                                                                                                                                |
 | Package Reference        | A means to declare a binary dependency in a project file                                                                                                                                                         |
 | Project Evaluation       | The process MSBuild uses to "compile" projects, targets, and properties into single result.                                                                                                                      |
-| Properties               | name/value pairs used to configure a build (info [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-properties?view=vs-2019))                                                                  |
-| sdk-style                | The new project format used for .NET Core projects.  Requires a use-sdk attribute in the project xml node                                                                                                        |
-| Targets                  | A set of tasks for MSBuild to execute (info [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-targets?view=vs-2019))                                                                          |
-| Tasks                    | A generic action that MSBuild need to perform (info [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-tasks?view=vs-2019))                                                                    |
-| vbproj                   | The file and exension and therefore common name used to refer to project files for the Visual Basic programming language                                                                                         |
-| Visual Studio            | A IDE for windows built using C++ and C#                                                                                                                                                                         |
-| Visual Studio Code       | A text editor for linux, macOS, and windows built on electron                                                                                                                                                    |
-| Visual Studio for Mac    | An IDE for macOS based on the MonoDeveop code base                                                                                                                                                               |
+| Properties               | Name/value pairs used to configure a build (info [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-properties?view=vs-2019))                                                                  |
+| sdk-style                | The new project format used for .NET Core projects. Requires a use-sdk attribute in the project xml node                                                                                                        |
+| Targets                  | A set of tasks for MSBuild to execute (info [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-targets?view=vs-2019))                                                                          |
+| Tasks                    | A generic action that MSBuild need to perform (info [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-tasks?view=vs-2019))                                                                    |
+| vbproj                   | The file and extension and therefore common name used to refer to project files for the Visual Basic programming language                                                                                         |
+| Visual Studio            | A IDE for Windows built using C++ and C#                                                                                                                                                                         |
+| Visual Studio Code       | A text editor for Linux, macOS, and Windows built on electron                                                                                                                                                    |
+| Visual Studio for Mac    | An IDE for macOS based on the MonoDevelop code base                                                                                                                                                               |
 | xUnit                    | The unit testing framework that most of .NET uses                                                                                                                                                                |
 
 ### Functional Requirements
@@ -152,26 +152,26 @@ There exist several tools that attempt to change the format of msbuild project o
 | [WRN1](#wrn1---fade-out-unnecessary-properties)                                              | Fade out unnecessary properties                                              | 03       |
 | [WRN2](#wrn2---warn-if-property-doesnt-exist)                                                | Warn if property doesn't exist                                               | 03       |
 
-#### IN01 - Installation  on Visual Studio
+#### IN01 - Installation on Visual Studio
 
 - **Requirement**: *The MSBuild Language Service shall be install-able into Visual Studio 2019 version 16.2 or newer*
 - **Validation**: Manually verify that installation succeeds.
 
-#### IN02 - Installation  on Visual Studio Code
+#### IN02 - Installation on Visual Studio Code
 
 - **Requirement**: *The MSBuild Language Service shall be install-able into Visual Studio Code 1.35 or newer*
 - **Validation**: Manually verify that installation succeeds.
 
 #### PR01 - Completion for package name when on a package reference node
 
-- **Requirement**: *When the user beings typing within a package-reference-node name attribute the MSBuild Language Service shall provide suggestions for the name based on existing packages defined on nuget.org.*
+- **Requirement**: *When the user begins typing within a package-reference-node name attribute the MSBuild Language Service shall provide suggestions for the name based on existing packages defined on nuget.org.*
 - **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files)
 
 #### PR02 - Completion for a package version when on a package reference node
 
 ##### PR02.1 - General
 
-- **Requirement**: *When the user beings typing within a package-reference-node version attribute the MSBuild Language Service shall provide suggestions for the version based on existing released packages defined on nuget.org.*
+- **Requirement**: *When the user begins typing within a package-reference-node version attribute the MSBuild Language Service shall provide suggestions for the version based on existing released packages defined on nuget.org.*
 - **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/nuget/guides/api/query-for-all-published-packages)
 
 ##### PR02.2 - Pre-release packages
@@ -191,89 +191,89 @@ There exist several tools that attempt to change the format of msbuild project o
 
 #### PP01.1 - reserved and well-known properties
 
-- **Requirement**: *When the user types in a property context  the MSBuild Language Service shall display completions for well-known properties.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-reserved-and-well-known-properties?view=vs-2019)
+- **Requirement**: *When the user types in a property context the MSBuild Language Service shall display completions for well-known properties.*
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-reserved-and-well-known-properties?view=vs-2019)
 
 #### PP01.2 - user defined properties
 
-- **Requirement**: *When the user types in a property context  the MSBuild Language Service shall display completions for  properties imported or defined by the user that are in scope.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/property-element-msbuild?view=vs-2019)
+- **Requirement**: *When the user types in a property context the MSBuild Language Service shall display completions for  properties imported or defined by the user that are in scope.*
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/property-element-MSBuild?view=vs-2019)
 
 #### PP02 - Present property information when the mouse hovers over a common property
 
 - **Requirement**: *When the user hovers their mouse over a common property the MSBuild Language Service shall display information about the property from https://docs.microsoft.com.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-properties?view=vs-2019)
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-properties?view=vs-2019)
 
 #### PP03 - Go to definition on properties
 
-- **Requirement**: *When the user invoked the go-to-defintion command the MSBuild Language Service shall take them to the location where that property value is assigned.*
+- **Requirement**: *When the user invoked the go-to-definition command the MSBuild Language Service shall take them to the location where that property value is assigned.*
 
 #### EX01 - Completion for `Condition` attributes
 
 - **Requirement**: *When the user types inside a conditional attribute the MSBuild Language Service shall display completions for defined items that are in scope.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-conditions?view=vs-2019)
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-conditions?view=vs-2019)
 
 #### EX02 - Completion for `$()` properties
 
 - **Requirement**: *When the user types inside a `$()` expression the MSBuild Language Service shall display completions for defined properties that are in scope.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/special-characters-to-escape?view=vs-2019)
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/special-characters-to-escape?view=vs-2019)
 
 #### EX03 - Completion for `@()` items
 
-- **Requirement**: *When the user types inside a `%()` expression the MSBuild Language Service shall display completions for defined items that are in scope.*
+- **Requirement**: *When the user types inside a `@()` expression the MSBuild Language Service shall display completions for defined items that are in scope.*
 
-#### EX04  Completion for `%()` item metadata
+#### EX04 Completion for `%()` item metadata
 
-##### EX04.1 - well-known item metadata
+##### EX04.1 - Well-known item metadata
 
 - **Requirement**: *When the user types inside a `%()` expression the MSBuild Language Service shall display completions for well-known item metadata.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-well-known-item-metadata?view=vs-2019)
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-well-known-item-metadata?view=vs-2019)
 
-##### EX04.2 - user defined item metadata
+##### EX04.2 - User defined item metadata
 
 - **Requirement**: *When the user types inside a `%()` expression the MSBuild Language Service shall display completions for defined metadata that are in scope.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/special-characters-to-escape?view=vs-2019)
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/special-characters-to-escape?view=vs-2019)
 
 #### EX05 - Completion for task metadata
 
 - **Requirement**: *When the user types inside a `%()` expression the MSBuild Language Service shall display completions for task metadata that are in scope.*
-- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-tasks?view=vs-2019)
+- **Additional Details**: See documentation [here](https://docs.microsoft.com/en-us/visualstudio/MSBuild/MSBuild-tasks?view=vs-2019)
 
 #### WRN1 - Fade out unnecessary properties
 
-- **Requirement**: *When the user opens a files that contains properties that are re-defined and re-assigned to values they already have the MSBuild Language Service shall indicate that these properties are unnecessary.*
+- **Requirement**: *When the user opens a file that contains properties that are re-defined and re-assigned to values they already have the MSBuild Language Service shall indicate that these properties are unnecessary.*
 
 #### WRN2 - Warn if property doesn't exist
 
-- **Requirement**: *When the user opens a files that contains expressions which refer to non-existant properties the MSBuild Language Service shall indicate that these properties are not defined.*
+- **Requirement**: *When the user opens a file that contains expressions which refer to non-existent properties the MSBuild Language Service shall indicate that these properties are not defined.*
 
 ## Design Decisions
 
 ### Technology Decisions
 
-The language-server-protocol is currently the best cross-platform technology we have for building a language service that works in multiple IDEs. It therefore seems like the correct initial approach is to start with a lsp implementation initially.
+The language-server-protocol is currently the best cross-platform technology we have for building a language service that works in multiple IDEs. It therefore seems like the correct initial approach is to start with an LSP implementation initially.
 
 ### Architecture Decisions
 
-We want to majority of the libraries to be .NET Standard 2.0 if possible to ensure maximum portability. There is interest in other products and components hosting this service in  many different ways. Dependencies on external projects should be discouraged.
+We want the majority of the libraries to be .NET Standard 2.0 if possible to ensure maximum portability. There is interest in other products and components hosting this service in many different ways. Dependencies on external projects should be discouraged.
 
 ### Packaging Decisions
 
-arcade will be used to package and deploy this project. It should give us most of the infrastructure for integrating with visual studio and shipping.
+arcade will be used to package and deploy this project. It should give us most of the infrastructure for integrating with Visual Studio and shipping.
 
 ## Testing
 
 ### Test Approach
 
-#### unit tests
+#### Unit tests
 
 unit tests should be the main set of test artifacts for the project.
 
-#### functional tests
+#### Functional tests
 
 functional testing should still use xunit but create a server and submit requests against that in order to verify that functionality is working.
 
-#### integration tests
+#### Integration tests
 
 Integration tests should be considered out of scope for this project.
 
@@ -285,4 +285,4 @@ xunit is the standard for the github.com/dotnet repos and should be the first ch
 
 #### Architectural Overview
 
-Internal visibility should not be necessary for functional tests as the lsp design should mean that rest requests against the process will be enough. Access to product internals  will likely need to happen for unit tests
+Internal visibility should not be necessary for functional tests as the LSP design should mean that REST requests against the process will be enough. Access to product internals will likely need to happen for unit tests
