@@ -6,12 +6,10 @@ variables:
 
 trigger:
   - main
-  - master
   - release/*
 
 pr:
   - main
-  - master
 
 jobs:
   - template: /eng/common/templates/jobs/jobs.yml
