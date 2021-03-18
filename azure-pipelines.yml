@@ -5,10 +5,12 @@ variables:
     value: DotNet-Project-System
 
 trigger:
+  - main
   - master
   - release/*
 
 pr:
+  - main
   - master
 
 jobs:
